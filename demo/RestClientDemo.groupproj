@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{F1C25C9F-6B66-4CC0-B9F1-62E7C68C39A7}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="..\Hermes.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Demo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\restdebugger\RESTDebugger.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Hermes">
+        <MSBuild Projects="..\Hermes.dproj"/>
+    </Target>
+    <Target Name="Hermes:Clean">
+        <MSBuild Projects="..\Hermes.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Hermes:Make">
+        <MSBuild Projects="..\Hermes.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Demo">
+        <MSBuild Projects="Demo.dproj"/>
+    </Target>
+    <Target Name="Demo:Clean">
+        <MSBuild Projects="Demo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Demo:Make">
+        <MSBuild Projects="Demo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="RESTDebugger">
+        <MSBuild Projects="..\..\restdebugger\RESTDebugger.dproj"/>
+    </Target>
+    <Target Name="RESTDebugger:Clean">
+        <MSBuild Projects="..\..\restdebugger\RESTDebugger.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RESTDebugger:Make">
+        <MSBuild Projects="..\..\restdebugger\RESTDebugger.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Hermes;Demo;RESTDebugger"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Hermes:Clean;Demo:Clean;RESTDebugger:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Hermes:Make;Demo:Make;RESTDebugger:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

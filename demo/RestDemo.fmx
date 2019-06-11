@@ -1,0 +1,102 @@
+object Form3: TForm3
+  Left = 0
+  Top = 0
+  Caption = 'Form3'
+  ClientHeight = 480
+  ClientWidth = 640
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object Grid1: TGrid
+    Align = Client
+    CanFocus = True
+    ClipChildren = True
+    Size.Width = 640.000000000000000000
+    Size.Height = 480.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    RowCount = 3
+    Viewport.Width = 636.000000000000000000
+    Viewport.Height = 455.000000000000000000
+  end
+  object Hermes1: THermes
+    Url = 
+      'https://e67ff54d-4ad1-4db5-898c-1da6b7ae8168.mock.pstmn.io/pai/1' +
+      '/filho/2'
+    Dataset = FDMemTable1
+    Client.Accept = 'application/json, text/plain; q=0.9, text/html;q=0.8,'
+    Client.AcceptCharset = 'utf-8, *;q=0.8'
+    Client.BaseURL = 
+      'https://e67ff54d-4ad1-4db5-898c-1da6b7ae8168.mock.pstmn.io/pai/1' +
+      '/filho/2'
+    Client.Params = <>
+    Request.Client.Accept = 'application/json, text/plain; q=0.9, text/html;q=0.8,'
+    Request.Client.AcceptCharset = 'utf-8, *;q=0.8'
+    Request.Client.BaseURL = 
+      'https://e67ff54d-4ad1-4db5-898c-1da6b7ae8168.mock.pstmn.io/pai/1' +
+      '/filho/2'
+    Request.Client.Params = <>
+    Request.Params = <>
+    Request.Response.ContentType = 'text/html'
+    Request.SynchronizedEvents = False
+    Response.ContentType = 'text/html'
+    DataSetAdapter.Active = True
+    DataSetAdapter.Dataset = FDMemTable1
+    DataSetAdapter.FieldDefs = <>
+    DataSetAdapter.Response.ContentType = 'text/html'
+    Left = 256
+    Top = 104
+  end
+  object FDMemTable1: TFDMemTable
+    Active = True
+    FieldDefs = <
+      item
+        Name = 'name'
+        DataType = ftWideString
+        Size = 255
+      end
+      item
+        Name = 'test'
+        DataType = ftWideString
+        Size = 255
+      end>
+    IndexDefs = <>
+    FetchOptions.AssignedValues = [evMode]
+    FetchOptions.Mode = fmAll
+    ResourceOptions.AssignedValues = [rvSilentMode]
+    ResourceOptions.SilentMode = True
+    UpdateOptions.AssignedValues = [uvCheckRequired]
+    UpdateOptions.CheckRequired = False
+    StoreDefs = True
+    Left = 336
+    Top = 96
+    object FDMemTable1name: TWideStringField
+      FieldName = 'name'
+      Size = 255
+    end
+    object FDMemTable1test: TWideStringField
+      FieldName = 'test'
+      Size = 255
+    end
+  end
+  object BindSourceDB1: TBindSourceDB
+    DataSet = FDMemTable1
+    ScopeMappings = <>
+    Left = 304
+    Top = 224
+  end
+  object BindingsList1: TBindingsList
+    Methods = <>
+    OutputConverters = <>
+    Left = 452
+    Top = 237
+    object LinkGridToDataSourceBindSourceDB1: TLinkGridToDataSource
+      Category = 'Quick Bindings'
+      DataSource = BindSourceDB1
+      GridControl = Grid1
+      Columns = <>
+    end
+  end
+end

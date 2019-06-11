@@ -1,0 +1,11 @@
+{
+	"name": "hermes",
+	"description": "",
+	"version": "1.0.0",
+	"homepage": "",
+	"mainsrc": "src/",
+	"projects": [
+		"Hermes.dproj"
+	],
+	"dependencies": {}
+}
