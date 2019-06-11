@@ -3,7 +3,7 @@ program Demo;
 uses
   System.StartUpCopy,
   FMX.Forms,
-  RestDemo in 'RestDemo.pas' {Form3},
+  RestDemo in 'src\RestDemo.pas' {Form3},
   REST.Hermes in '..\src\REST.Hermes.pas';
 
 {$R *.res}

@@ -156,7 +156,7 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="RestDemo.pas">
+        <DCCReference Include="src\RestDemo.pas">
             <Form>Form3</Form>
             <FormType>fmx</FormType>
         </DCCReference>
