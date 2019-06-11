@@ -3,9 +3,15 @@ unit REST.Hermes;
 interface
 
 uses
-  System.Classes, REST.Client, REST.Types, FireDAC.Comp.Client, REST.Response.Adapter, Data.Bind.ObjectScope, System.SysUtils;
+  System.Classes, REST.Client, REST.Types, FireDAC.Comp.Client, REST.Response.Adapter, Data.Bind.ObjectScope,
+  System.SysUtils;
 
 type
+  THermes = class;
+
+  THermesExecuteCallback = procedure(AHermes: THermes) of Object;
+  THermesExecuteCallbackRef = TProc<THermes>;
+
   THermes = class(TBaseObjectBindSourceDelegate)
   private
     FRESTClient: TRESTClient;
@@ -14,6 +20,7 @@ type
     FDataSetAdapter: TRESTResponseDataSetAdapter;
 
     FDataSet: TFDMemTable;
+    FOnRequestCompleted: THermesExecuteCallback;
 
     procedure DoJoinComponents;
     function GetUrl: String;
@@ -30,18 +37,19 @@ type
     constructor Create(AOwner: TComponent); override;
     Procedure Execute;
     Procedure ExecuteAsync; Overload;
-    Procedure ExecuteAsync(ACallback: TProc<THermes>); Overload;
+    Procedure ExecuteAsync(ACallback: THermesExecuteCallbackRef); Overload;
 
   published
     property Url: String read GetUrl write SetUrl;
     property Method: TRESTRequestMethod read GetMethod write SetMethod default rmGET;
     property Dataset: TFDMemTable read GetDataSet write SetDataSet;
 
-    property Client: TRESTClient read FRestClient write FRestClient;
+    property Client: TRESTClient read FRESTClient write FRESTClient;
     property Request: TRESTRequest read FRESTRequest write FRESTRequest;
     property Response: TRESTResponse read FRESTResponse write FRESTResponse;
     property DataSetAdapter: TRESTResponseDataSetAdapter read FDataSetAdapter write FDataSetAdapter;
     property AuthProvider: TCustomAuthenticator read GetAuthProvider write SetAuthProvider;
+    property OnRequestCompleted: THermesExecuteCallback read FOnRequestCompleted write FOnRequestCompleted;
   end;
 
 procedure Register;
@@ -85,18 +93,19 @@ begin
   FRESTRequest.Execute;
 end;
 
-procedure THermes.ExecuteAsync(ACallback: TProc<THermes>);
+procedure THermes.ExecuteAsync(ACallback: THermesExecuteCallbackRef);
 begin
   FRESTRequest.ExecuteAsync(
     procedure
     begin
-      ACallBack(Self)
+      if Assigned(ACallback) then
+        ACallback(Self)
     end);
 end;
 
 procedure THermes.ExecuteAsync;
 begin
-  FRESTRequest.ExecuteAsync;
+  ExecuteAsync(OnRequestCompleted);
 end;
 
 function THermes.GetAuthProvider: TCustomAuthenticator;

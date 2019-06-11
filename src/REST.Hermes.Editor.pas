@@ -56,14 +56,14 @@ begin
       Result := '&Execute';
     1:
       Result := '&Clear data';
-    2:
-      Result := 'Debugger editor';
+//    2:
+//      Result := 'Debugger editor';
   end;
 end;
 
 function THermesEditor.GetVerbCount: Integer;
 begin
-  Result := 3;
+  Result := 2;
 end;
 
 procedure Register;
