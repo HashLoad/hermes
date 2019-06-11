@@ -3,7 +3,7 @@ unit REST.Hermes;
 interface
 
 uses
-  System.Classes, REST.Client, REST.Types, FireDAC.Comp.Client, REST.Response.Adapter, Data.Bind.ObjectScope;
+  System.Classes, REST.Client, REST.Types, FireDAC.Comp.Client, REST.Response.Adapter, Data.Bind.ObjectScope, System.SysUtils;
 
 type
   THermes = class(TBaseObjectBindSourceDelegate)
@@ -29,7 +29,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     Procedure Execute;
-    Procedure ExecuteAsync;
+    Procedure ExecuteAsync; Overload;
+    Procedure ExecuteAsync(ACallback: TProc<THermes>); Overload;
 
   published
     property Url: String read GetUrl write SetUrl;
@@ -82,6 +83,15 @@ end;
 procedure THermes.Execute;
 begin
   FRESTRequest.Execute;
+end;
+
+procedure THermes.ExecuteAsync(ACallback: TProc<THermes>);
+begin
+  FRESTRequest.ExecuteAsync(
+    procedure
+    begin
+      ACallBack(Self)
+    end);
 end;
 
 procedure THermes.ExecuteAsync;
