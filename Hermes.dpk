@@ -39,6 +39,9 @@ requires
 
 contains
   REST.Hermes in 'src\REST.Hermes.pas',
-  REST.Hermes.Editor in 'src\REST.Hermes.Editor.pas';
+  REST.Hermes.Editor in 'src\REST.Hermes.Editor.pas',
+  REST.Hermes.Register in 'src\REST.Hermes.Register.pas',
+  REST.Hermes.Manager in 'src\REST.Hermes.Manager.pas',
+  REST.Hermes.Interceptor in 'src\REST.Hermes.Interceptor.pas';
 
 end.

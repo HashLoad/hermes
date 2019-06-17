@@ -113,6 +113,9 @@
         <DCCReference Include="designide.dcp"/>
         <DCCReference Include="src\REST.Hermes.pas"/>
         <DCCReference Include="src\REST.Hermes.Editor.pas"/>
+        <DCCReference Include="src\REST.Hermes.Register.pas"/>
+        <DCCReference Include="src\REST.Hermes.Manager.pas"/>
+        <DCCReference Include="src\REST.Hermes.Interceptor.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

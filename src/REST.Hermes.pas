@@ -4,59 +4,98 @@ interface
 
 uses
   System.Classes, REST.Client, REST.Types, FireDAC.Comp.Client, REST.Response.Adapter, Data.Bind.ObjectScope,
-  System.SysUtils;
+  System.SysUtils, System.Generics.Collections;
 
 type
   THermes = class;
 
-  THermesExecuteCallback = procedure(AHermes: THermes) of Object;
+  THermesExecuteCallback = procedure(const AHermes: THermes) of Object;
   THermesExecuteCallbackRef = TProc<THermes>;
 
-  THermes = class(TBaseObjectBindSourceDelegate)
-  private
+  IHermesInterceptor = interface
+    procedure BeforeExecute(const AHermes: THermes);
+    procedure AfterExecute(const AHermes: THermes);
+  end;
+
+  THermes = class(TComponent)
+  private                                        
+    FDataSet: TFDMemTable;
     FRESTClient: TRESTClient;
     FRESTRequest: TRESTRequest;
     FRESTResponse: TRESTResponse;
     FDataSetAdapter: TRESTResponseDataSetAdapter;
-
-    FDataSet: TFDMemTable;
     FOnRequestCompleted: THermesExecuteCallback;
 
     procedure DoJoinComponents;
-    function GetUrl: String;
-    procedure SetUrl(const Value: String);
     function GetMethod: TRESTRequestMethod;
-    procedure SetMethod(const Value: TRESTRequestMethod);
     function GetDataSet: TFDMemTable;
-    procedure SetDataSet(const Value: TFDMemTable);
-    procedure SetAuthProvider(const Value: TCustomAuthenticator);
+    function GetBasePath: String;              
+    function GetResource: string;
     function GetAuthProvider: TCustomAuthenticator;
-  protected
-    function CreateBindSource: TBaseObjectBindSource; override;
-  public
+
+    procedure SetMethod(const Value: TRESTRequestMethod);
+    procedure SetDataSet(const Value: TFDMemTable);
+    procedure SetResource(const Value: string);
+    procedure SetBasePath(const Value: String);
+    procedure SetAuthProvider(const Value: TCustomAuthenticator);
+    
+    procedure RESTRequestAfterExecute(Sender: TCustomRESTRequest);
+
+     procedure AfterExecute(const AHermes: THermes);
+     procedure BeforeExecute(const AHermes: THermes);
+   public
     constructor Create(AOwner: TComponent); override;
     Procedure Execute;
     Procedure ExecuteAsync; Overload;
     Procedure ExecuteAsync(ACallback: THermesExecuteCallbackRef); Overload;
-
   published
-    property Url: String read GetUrl write SetUrl;
     property Method: TRESTRequestMethod read GetMethod write SetMethod default rmGET;
     property Dataset: TFDMemTable read GetDataSet write SetDataSet;
-
+    property BasePath: String read GetBasePath write SetBasePath;
+    property Resource: string read GetResource write SetResource;
+    
     property Client: TRESTClient read FRESTClient write FRESTClient;
     property Request: TRESTRequest read FRESTRequest write FRESTRequest;
     property Response: TRESTResponse read FRESTResponse write FRESTResponse;
     property DataSetAdapter: TRESTResponseDataSetAdapter read FDataSetAdapter write FDataSetAdapter;
     property AuthProvider: TCustomAuthenticator read GetAuthProvider write SetAuthProvider;
     property OnRequestCompleted: THermesExecuteCallback read FOnRequestCompleted write FOnRequestCompleted;
-  end;
 
-procedure Register;
+    class Procedure AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
+    class Procedure RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
+  end;
 
 implementation
 
+uses
+  REST.Hermes.Manager;
+
 { THermes }
+
+class procedure THermes.AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
+begin
+  THermesManager.FGlobalInterceptors.Add(AInterceptor);
+end;
+
+procedure THermes.AfterExecute(const AHermes: THermes);
+var
+  LInterceptor: IHermesInterceptor;
+begin
+  for LInterceptor in THermesManager.FGlobalInterceptors do
+  begin
+    LInterceptor.AfterExecute(Self);
+  end;
+end;
+
+procedure THermes.BeforeExecute(const AHermes: THermes);
+var
+  LInterceptor: IHermesInterceptor;
+begin
+  for LInterceptor in THermesManager.FGlobalInterceptors do
+  begin
+    LInterceptor.BeforeExecute(Self);
+  end;
+end;
 
 constructor THermes.Create(AOwner: TComponent);
 begin
@@ -74,12 +113,9 @@ begin
   FDataSetAdapter.SetSubComponent(True);
   FDataSetAdapter.Response := FRESTResponse;
 
-  DoJoinComponents;
-end;
+  FRESTRequest.OnAfterExecute := RESTRequestAfterExecute;
 
-function THermes.CreateBindSource: TBaseObjectBindSource;
-begin
-  Result := TSubRESTRequestBindSource.Create(Self);
+  DoJoinComponents;
 end;
 
 procedure THermes.DoJoinComponents;
@@ -90,11 +126,14 @@ end;
 
 procedure THermes.Execute;
 begin
+  BeforeExecute(Self);
+    
   FRESTRequest.Execute;
 end;
 
 procedure THermes.ExecuteAsync(ACallback: THermesExecuteCallbackRef);
 begin
+  BeforeExecute(Self);
   FRESTRequest.ExecuteAsync(
     procedure
     begin
@@ -105,7 +144,8 @@ end;
 
 procedure THermes.ExecuteAsync;
 begin
-  ExecuteAsync(OnRequestCompleted);
+  BeforeExecute(Self);
+  FRESTRequest.ExecuteAsync;
 end;
 
 function THermes.GetAuthProvider: TCustomAuthenticator;
@@ -123,9 +163,27 @@ begin
   Result := FRESTRequest.Method;
 end;
 
-function THermes.GetUrl: String;
+function THermes.GetResource: string;
 begin
-  Result := FRESTClient.BaseURL;
+  Result := FRESTRequest.Resource;
+end;
+
+class procedure THermes.RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
+begin
+   THermesManager.FGlobalInterceptors.Remove(AInterceptor);
+end;
+
+procedure THermes.RESTRequestAfterExecute(Sender: TCustomRESTRequest);
+begin
+  AfterExecute(Self);
+end;
+
+function THermes.GetBasePath: String;
+begin
+  if FRESTClient.BaseURL.IsEmpty then
+    Result := THermesManager.FBasePath
+  else
+    Result := FRESTClient.BaseURL;
 end;
 
 procedure THermes.SetAuthProvider(const Value: TCustomAuthenticator);
@@ -144,14 +202,14 @@ begin
   FRESTRequest.Method := Value;
 end;
 
-procedure THermes.SetUrl(const Value: String);
+procedure THermes.SetResource(const Value: string);
 begin
-  FRESTClient.BaseURL := Value;
+  FRESTRequest.Resource := Value;
 end;
 
-procedure Register;
+procedure THermes.SetBasePath(const Value: String);
 begin
-  RegisterComponents('HashLoad', [THermes]);
+  FRESTClient.BaseURL := Value;
 end;
 
 end.
