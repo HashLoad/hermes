@@ -20,6 +20,7 @@ type
   THermes = class(TComponent)
   private                                        
     FDataSet: TFDMemTable;
+    FBasePath: string;
     FRESTClient: TRESTClient;
     FRESTRequest: TRESTRequest;
     FRESTResponse: TRESTResponse;
@@ -29,29 +30,34 @@ type
     procedure DoJoinComponents;
     function GetMethod: TRESTRequestMethod;
     function GetDataSet: TFDMemTable;
-    function GetBasePath: String;              
+    function GetBasePath: String;
     function GetResource: string;
     function GetAuthProvider: TCustomAuthenticator;
+    function BasePathIsStored: Boolean;
 
     procedure SetMethod(const Value: TRESTRequestMethod);
     procedure SetDataSet(const Value: TFDMemTable);
     procedure SetResource(const Value: string);
     procedure SetBasePath(const Value: String);
     procedure SetAuthProvider(const Value: TCustomAuthenticator);
+
     
     procedure RESTRequestAfterExecute(Sender: TCustomRESTRequest);
 
      procedure AfterExecute(const AHermes: THermes);
      procedure BeforeExecute(const AHermes: THermes);
+  protected
    public
     constructor Create(AOwner: TComponent); override;
+
     Procedure Execute;
     Procedure ExecuteAsync; Overload;
     Procedure ExecuteAsync(ACallback: THermesExecuteCallbackRef); Overload;
+    destructor Destroy; override;
   published
     property Method: TRESTRequestMethod read GetMethod write SetMethod default rmGET;
     property Dataset: TFDMemTable read GetDataSet write SetDataSet;
-    property BasePath: String read GetBasePath write SetBasePath;
+    property BasePath: String read GetBasePath write SetBasePath stored BasePathIsStored;
     property Resource: string read GetResource write SetResource;
     
     property Client: TRESTClient read FRESTClient write FRESTClient;
@@ -87,10 +93,17 @@ begin
   end;
 end;
 
+function THermes.BasePathIsStored: Boolean;
+begin
+ Result := (FBasePath <> THermesManager.FBasePath) or FBasePath.IsEmpty;
+end;
+
 procedure THermes.BeforeExecute(const AHermes: THermes);
 var
   LInterceptor: IHermesInterceptor;
 begin
+  FRESTClient.BaseURL := BasePath;
+
   for LInterceptor in THermesManager.FGlobalInterceptors do
   begin
     LInterceptor.BeforeExecute(Self);
@@ -100,6 +113,10 @@ end;
 constructor THermes.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  THermesManager
+    .GlobalHermes
+    .Add(Self);
+
   FRESTClient := TRESTClient.Create(Self);
   FRESTClient.SetSubComponent(True);
 
@@ -114,8 +131,17 @@ begin
   FDataSetAdapter.Response := FRESTResponse;
 
   FRESTRequest.OnAfterExecute := RESTRequestAfterExecute;
+  FBasePath := THermesManager.FBasePath;
 
   DoJoinComponents;
+end;
+
+destructor THermes.Destroy;
+begin
+  THermesManager
+    .GlobalHermes
+    .Remove(Self);
+  inherited;
 end;
 
 procedure THermes.DoJoinComponents;
@@ -180,10 +206,10 @@ end;
 
 function THermes.GetBasePath: String;
 begin
-  if FRESTClient.BaseURL.IsEmpty then
-    Result := THermesManager.FBasePath
-  else
-    Result := FRESTClient.BaseURL;
+  if FBasePath.IsEmpty then
+    FBasePath := THermesManager.FBasePath;
+
+  Result := FBasePath;
 end;
 
 procedure THermes.SetAuthProvider(const Value: TCustomAuthenticator);
@@ -209,7 +235,7 @@ end;
 
 procedure THermes.SetBasePath(const Value: String);
 begin
-  FRESTClient.BaseURL := Value;
+  FBasePath := Value;
 end;
 
 end.

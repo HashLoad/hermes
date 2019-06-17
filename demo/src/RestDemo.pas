@@ -7,9 +7,9 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, REST.Types, FireDAC.Stan.Intf, FireDAC.Stan.Option,
   FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, Data.DB,
   FireDAC.Comp.DataSet, FireDAC.Comp.Client, REST.Response.Adapter, REST.Client, Data.Bind.Components,
-  Data.Bind.ObjectScope, REST.Hermes, System.Rtti, FMX.Grid.Style, Data.Bind.EngExt, Fmx.Bind.DBEngExt,
-  Fmx.Bind.Grid, System.Bindings.Outputs, Fmx.Bind.Editors, Data.Bind.Grid, Data.Bind.DBScope,
-  FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, REST.Authenticator.OAuth;
+  Data.Bind.ObjectScope, REST.Hermes, System.Rtti, FMX.Grid.Style, Data.Bind.EngExt, FMX.Bind.DBEngExt,
+  FMX.Bind.Grid, System.Bindings.Outputs, FMX.Bind.Editors, Data.Bind.Grid, Data.Bind.DBScope,
+  FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, REST.Authenticator.OAuth, REST.Hermes.Manager, FMX.StdCtrls;
 
 type
   TForm3 = class(TForm)
@@ -19,10 +19,13 @@ type
     BindSourceDB1: TBindSourceDB;
     BindingsList1: TBindingsList;
     LinkGridToDataSourceBindSourceDB1: TLinkGridToDataSource;
-    FDMemTable1name: TWideStringField;
-    FDMemTable1test: TWideStringField;
-    procedure FormCreate(Sender: TObject);
-    procedure OAuth2Authenticator1Authenticate(ARequest: TCustomRESTRequest; var ADone: Boolean);
+    HermesManager: THermesManager;
+    Button1: TButton;
+    FDMemTable1userId: TWideStringField;
+    FDMemTable1id: TWideStringField;
+    FDMemTable1title: TWideStringField;
+    FDMemTable1body: TWideStringField;
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -36,14 +39,9 @@ implementation
 
 {$R *.fmx}
 
-procedure TForm3.FormCreate(Sender: TObject);
+procedure TForm3.Button1Click(Sender: TObject);
 begin
- Hermes1.Execute;
-end;
-
-procedure TForm3.OAuth2Authenticator1Authenticate(ARequest: TCustomRESTRequest; var ADone: Boolean);
-begin
-//
+  Hermes1.Execute;
 end;
 
 end.

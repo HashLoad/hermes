@@ -32,7 +32,7 @@ end;
 
 procedure THermesEditor.DoExecute;
 begin
-  (Component as THermes).Request.Execute;
+  (Component as THermes).Execute;
   ShowMessage((Component as THermes).Response.StatusText);
 end;
 

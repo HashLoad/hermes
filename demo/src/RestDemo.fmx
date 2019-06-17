@@ -7,7 +7,6 @@ object Form3: TForm3
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
-  OnCreate = FormCreate
   DesignerMasterStyle = 0
   object Grid1: TGrid
     Align = Client
@@ -17,35 +16,36 @@ object Form3: TForm3
     Size.Height = 480.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 6
-    RowCount = 0
-    Viewport.Width = 636.000000000000000000
+    Viewport.Width = 620.000000000000000000
     Viewport.Height = 455.000000000000000000
   end
+  object Button1: TButton
+    Position.X = 248.000000000000000000
+    Position.Y = 344.000000000000000000
+    TabOrder = 13
+    Text = 'Button1'
+    OnClick = Button1Click
+  end
   object Hermes1: THermes
-    Url = 
-      'https://e67ff54d-4ad1-4db5-898c-1da6b7ae8168.mock.pstmn.io/pai/1' +
-      '/filho/2'
     Dataset = FDMemTable1
+    Resource = 'posts'
     Client.Accept = 'application/json, text/plain; q=0.9, text/html;q=0.8,'
     Client.AcceptCharset = 'utf-8, *;q=0.8'
-    Client.BaseURL = 
-      'https://e67ff54d-4ad1-4db5-898c-1da6b7ae8168.mock.pstmn.io/pai/1' +
-      '/filho/2'
+    Client.BaseURL = 'https://jsonplaceholder.typicode.com/'
     Client.Params = <>
     Request.Client.Accept = 'application/json, text/plain; q=0.9, text/html;q=0.8,'
     Request.Client.AcceptCharset = 'utf-8, *;q=0.8'
-    Request.Client.BaseURL = 
-      'https://e67ff54d-4ad1-4db5-898c-1da6b7ae8168.mock.pstmn.io/pai/1' +
-      '/filho/2'
+    Request.Client.BaseURL = 'https://jsonplaceholder.typicode.com/'
     Request.Client.Params = <>
     Request.Params = <>
-    Request.Response.ContentType = 'text/html'
+    Request.Resource = 'posts'
+    Request.Response.ContentType = 'application/json'
     Request.SynchronizedEvents = False
-    Response.ContentType = 'text/html'
+    Response.ContentType = 'application/json'
     DataSetAdapter.Active = True
     DataSetAdapter.Dataset = FDMemTable1
     DataSetAdapter.FieldDefs = <>
-    DataSetAdapter.Response.ContentType = 'text/html'
+    DataSetAdapter.Response.ContentType = 'application/json'
     Left = 256
     Top = 104
   end
@@ -53,12 +53,22 @@ object Form3: TForm3
     Active = True
     FieldDefs = <
       item
-        Name = 'name'
+        Name = 'userId'
         DataType = ftWideString
         Size = 255
       end
       item
-        Name = 'test'
+        Name = 'id'
+        DataType = ftWideString
+        Size = 255
+      end
+      item
+        Name = 'title'
+        DataType = ftWideString
+        Size = 255
+      end
+      item
+        Name = 'body'
         DataType = ftWideString
         Size = 255
       end>
@@ -72,12 +82,20 @@ object Form3: TForm3
     StoreDefs = True
     Left = 336
     Top = 96
-    object FDMemTable1name: TWideStringField
-      FieldName = 'name'
+    object FDMemTable1userId: TWideStringField
+      FieldName = 'userId'
       Size = 255
     end
-    object FDMemTable1test: TWideStringField
-      FieldName = 'test'
+    object FDMemTable1id: TWideStringField
+      FieldName = 'id'
+      Size = 255
+    end
+    object FDMemTable1title: TWideStringField
+      FieldName = 'title'
+      Size = 255
+    end
+    object FDMemTable1body: TWideStringField
+      FieldName = 'body'
       Size = 255
     end
   end
@@ -98,5 +116,10 @@ object Form3: TForm3
       GridControl = Grid1
       Columns = <>
     end
+  end
+  object HermesManager: THermesManager
+    BasePath = 'https://jsonplaceholder.typicode.com/'
+    Left = 488
+    Top = 152
   end
 end
