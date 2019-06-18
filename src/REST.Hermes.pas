@@ -155,6 +155,8 @@ begin
   BeforeExecute(Self);
     
   FRESTRequest.Execute;
+  if Assigned(OnRequestCompleted) then
+    OnRequestCompleted(Self);
 end;
 
 procedure THermes.ExecuteAsync(ACallback: THermesExecuteCallbackRef);
@@ -165,13 +167,19 @@ begin
     begin
       if Assigned(ACallback) then
         ACallback(Self)
+      else
+        OnRequestCompleted(Self);
     end);
 end;
 
 procedure THermes.ExecuteAsync;
 begin
   BeforeExecute(Self);
-  FRESTRequest.ExecuteAsync;
+  FRESTRequest.ExecuteAsync(
+    procedure
+    begin
+      OnRequestCompleted(Self);
+    end);
 end;
 
 function THermes.GetAuthProvider: TCustomAuthenticator;
