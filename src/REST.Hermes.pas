@@ -84,13 +84,17 @@ begin
 end;
 
 procedure THermes.AfterExecute(const AHermes: THermes);
-var
-  LInterceptor: IHermesInterceptor;
 begin
-  for LInterceptor in THermesManager.FGlobalInterceptors do
-  begin
-    LInterceptor.AfterExecute(Self);
-  end;
+  TThread.Synchronize(nil,
+    procedure
+    var
+      LInterceptor: IHermesInterceptor;
+    begin
+      for LInterceptor in THermesManager.FGlobalInterceptors do
+      begin
+        LInterceptor.AfterExecute(Self);
+      end
+    end);
 end;
 
 function THermes.BasePathIsStored: Boolean;
@@ -99,15 +103,17 @@ begin
 end;
 
 procedure THermes.BeforeExecute(const AHermes: THermes);
-var
-  LInterceptor: IHermesInterceptor;
 begin
-  FRESTClient.BaseURL := BasePath;
-
-  for LInterceptor in THermesManager.FGlobalInterceptors do
-  begin
-    LInterceptor.BeforeExecute(Self);
-  end;
+  TThread.Synchronize(nil,
+    procedure
+    var
+      LInterceptor: IHermesInterceptor;
+    begin
+      for LInterceptor in THermesManager.FGlobalInterceptors do
+      begin
+        LInterceptor.BeforeExecute(Self);
+      end
+    end);
 end;
 
 constructor THermes.Create(AOwner: TComponent);

@@ -9,9 +9,6 @@
         <Projects Include="Demo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="..\..\restdebugger\RESTDebugger.dproj">
-            <Dependencies/>
-        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -38,23 +35,14 @@
     <Target Name="Demo:Make">
         <MSBuild Projects="Demo.dproj" Targets="Make"/>
     </Target>
-    <Target Name="RESTDebugger">
-        <MSBuild Projects="..\..\restdebugger\RESTDebugger.dproj"/>
-    </Target>
-    <Target Name="RESTDebugger:Clean">
-        <MSBuild Projects="..\..\restdebugger\RESTDebugger.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="RESTDebugger:Make">
-        <MSBuild Projects="..\..\restdebugger\RESTDebugger.dproj" Targets="Make"/>
-    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hermes;Demo;RESTDebugger"/>
+        <CallTarget Targets="Hermes;Demo"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hermes:Clean;Demo:Clean;RESTDebugger:Clean"/>
+        <CallTarget Targets="Hermes:Clean;Demo:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hermes:Make;Demo:Make;RESTDebugger:Make"/>
+        <CallTarget Targets="Hermes:Make;Demo:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
