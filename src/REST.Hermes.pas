@@ -4,10 +4,11 @@ interface
 
 uses
   System.Classes, REST.Client, REST.Types, FireDAC.Comp.Client, REST.Response.Adapter, Data.Bind.ObjectScope,
-  System.SysUtils, System.Generics.Collections;
+  System.SysUtils, System.Generics.Collections, System.Json;
 
 type
   THermes = class;
+  TRESTObjectOwnership = REST.Types.TRESTObjectOwnership;
 
   THermesExecuteCallback = procedure(const AHermes: THermes) of Object;
   THermesExecuteCallbackRef = TProc<THermes>;
@@ -49,7 +50,9 @@ type
   protected
    public
     constructor Create(AOwner: TComponent); override;
-
+    function SetParam(AParam: string; AValue: string): THermes;
+    function SetHeader(AKey: string; AValue: string): THermes;
+    function SetBody(AJson: TJSONObject; const ARESTObjectOwnership: TRESTObjectOwnership=TRESTObjectOwnership.ooREST): THermes;
     Procedure Execute;
     Procedure ExecuteAsync; Overload;
     Procedure ExecuteAsync(ACallback: THermesExecuteCallbackRef); Overload;
@@ -237,9 +240,21 @@ begin
   FDataSet := Value;
 end;
 
+function THermes.SetHeader(AKey: string; AValue: string): THermes;
+begin
+Result:=Self;
+Request.Params.AddHeader(AKey, AValue);
+end;
+
 procedure THermes.SetMethod(const Value: TRESTRequestMethod);
 begin
   FRESTRequest.Method := Value;
+end;
+
+function THermes.SetParam(AParam, AValue: string): THermes;
+begin
+Result:= Self;
+Request.Params.ParameterByName(AParam).Value := AValue;
 end;
 
 procedure THermes.SetResource(const Value: string);
@@ -250,6 +265,12 @@ end;
 procedure THermes.SetBasePath(const Value: String);
 begin
   FBasePath := Value;
+end;
+
+function THermes.SetBody(AJson: TJSONObject; const ARESTObjectOwnership: TRESTObjectOwnership=TRESTObjectOwnership.ooREST): THermes;
+begin
+  Result:= Self;
+  Request.Params.AddBody(AJson, ARESTObjectOwnership);
 end;
 
 end.
