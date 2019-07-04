@@ -9,22 +9,15 @@ uses
   FireDAC.Comp.DataSet, FireDAC.Comp.Client, REST.Response.Adapter, REST.Client, Data.Bind.Components,
   Data.Bind.ObjectScope, REST.Hermes, System.Rtti, FMX.Grid.Style, Data.Bind.EngExt, FMX.Bind.DBEngExt,
   FMX.Bind.Grid, System.Bindings.Outputs, FMX.Bind.Editors, Data.Bind.Grid, Data.Bind.DBScope,
-  FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, REST.Authenticator.OAuth, REST.Hermes.Manager, FMX.StdCtrls;
+  FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, REST.Authenticator.OAuth, REST.Hermes.Manager, FMX.StdCtrls,
+  FMX.Memo, FMX.WebBrowser;
 
 type
   TForm3 = class(TForm)
-    Hermes1: THermes;
-    FDMemTable1: TFDMemTable;
-    Grid1: TGrid;
-    BindSourceDB1: TBindSourceDB;
-    BindingsList1: TBindingsList;
-    LinkGridToDataSourceBindSourceDB1: TLinkGridToDataSource;
-    HermesManager: THermesManager;
     Button1: TButton;
-    FDMemTable1userId: TWideStringField;
-    FDMemTable1id: TWideStringField;
-    FDMemTable1title: TWideStringField;
-    FDMemTable1body: TWideStringField;
+    Hermes1: THermes;
+    Memo1: TMemo;
+    WebBrowser1: TWebBrowser;
     procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
@@ -41,7 +34,20 @@ implementation
 
 procedure TForm3.Button1Click(Sender: TObject);
 begin
-  Hermes1.Execute;
+  Hermes1
+    .SetQuery('q', 'Rodrigo Bernardi')
+    .Execute;
+
+  Memo1.Lines.Add('Status: ' + Hermes1.Response.StatusCode.ToString + ' - ' + Hermes1.Response.StatusText);
+  Memo1.Lines.Add('Date: ' + Hermes1.Response.Date);
+  Memo1.Lines.Add('Encoding: ' + Hermes1.Response.ContentEncoding);
+  Memo1.Lines.Add('Lang: ' + Hermes1.Response.ContentLanguage);
+  Memo1.Lines.Add('Length: ' + Hermes1.Response.ContentLength.ToString);
+  Memo1.Lines.Add('Mime: ' + Hermes1.Response.MimeType);
+  Memo1.Lines.Add('CharSet: ' + Hermes1.Response.ContentCharSet);
+  Memo1.Lines.Add('Content: ' + Hermes1.Response.ContentAsString());
+
+  WebBrowser1.LoadFromStrings(Hermes1.Response.ContentAsString, Hermes1.BasePath);
 end;
 
 end.

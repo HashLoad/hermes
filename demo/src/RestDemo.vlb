@@ -1,20 +1,7 @@
 ﻿[]
-Coordinates=179,1,82,33
-Visible=False
-
-[FDMemTable1]
-Coordinates=76,1,84,33
+Coordinates=300,1,82,33
 Visible=True
-
-[Grid1]
-Coordinates=57,70,41,51
 
 [Hermes1]
 Coordinates=0,0,57,51
-
-[BindSourceDB1]
-Coordinates=170,1,92,69
-
-[BindingsList1]
-Coordinates=300,1,82,33
 

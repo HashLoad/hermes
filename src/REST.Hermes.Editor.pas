@@ -27,13 +27,13 @@ uses
 
 procedure THermesEditor.ClearData;
 begin
-  (Component as THermes).Response.ResetToDefaults;
+//  (Component as THermes).Response.ResetToDefaults;
 end;
 
 procedure THermesEditor.DoExecute;
 begin
   (Component as THermes).Execute;
-  ShowMessage((Component as THermes).Response.StatusText);
+//  ShowMessage((Component as THermes).Response.StatusText);
 end;
 
 procedure THermesEditor.ExecuteVerb(Index: Integer);
