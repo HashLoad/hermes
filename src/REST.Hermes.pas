@@ -5,7 +5,8 @@ interface
 uses
   System.Classes, REST.Client, REST.Types, REST.Response.Adapter, Data.Bind.ObjectScope,
   System.SysUtils, System.Generics.Collections, System.Json, System.Net.HttpClientComponent,
-  System.Net.URLClient, FireDAC.Comp.Client, System.Net.HttpClient, REST.Hermes.Params, REST.Hermes.Core, System.Rtti;
+  System.Net.URLClient, FireDAC.Comp.Client, System.Net.HttpClient, REST.Hermes.Params, REST.Hermes.Core, System.Rtti,
+  REST.Hermes.Response;
 
 type
   THermes = class;
@@ -26,7 +27,7 @@ type
     FResource: string;
 
     FClient: TNetHTTPClient;
-    FResponse: IHTTPResponse;
+    FResponse: THermesResponse;
 
     FOwnsObject: Boolean;
     FBody: TJSONObject;
@@ -43,10 +44,9 @@ type
     function GetURL: string;
     procedure DoInjectHeaders;
 
-    procedure DoCallExecuteClient;
-
     procedure DoExecute;
     procedure DoExecuteAsync; overload;
+    procedure DoExecuteAsync(ACallback: TProc); overload;
 
     procedure OnInternalRequestError(const Sender: TObject; const AError: string);
     procedure OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
@@ -69,7 +69,7 @@ type
     property Resource: string read FResource write FResource;
     property Params: THermesParams read FParams;
 
-    property Response: IHTTPResponse read FResponse;
+    property Response: THermesResponse read FResponse;
 
     property OnRequestCompleted: THermesExecuteCallback read FOnRequestCompleted write FOnRequestCompleted;
 
@@ -80,7 +80,7 @@ type
 implementation
 
 uses
-  REST.Hermes.Manager, REST.Hermes.URL;
+  REST.Hermes.Manager, REST.Hermes.URL, System.Threading;
 
 { THermes }
 
@@ -125,17 +125,19 @@ begin
   FClient.OnRequestCompleted := OnInternalRequestCompleted;
 
   FBasePath := THermesManager.FBasePath;
+
+  FResponse := THermesResponse.Create;
 end;
 
 destructor THermes.Destroy;
 begin
   FClient.DisposeOf;
   FParams.DisposeOf;
-
+  FResponse.DisposeOf;
   inherited;
 end;
 
-procedure THermes.DoCallExecuteClient;
+procedure THermes.DoExecute;
 var
   LMethod: string;
   LURL: string;
@@ -156,16 +158,43 @@ begin
     FClient.Execute(LMethod, LURL);
 end;
 
-procedure THermes.DoExecute;
+procedure THermes.DoExecuteAsync(ACallback: TProc);
+var
+  LMethod: string;
+  LURL: string;
 begin
-  FClient.Asynchronous := False;
-  DoCallExecuteClient;
+  BeforeExecute(Self);
+  THermesAsyncThread.Create
+    .OnExecute(
+      procedure
+      begin
+        LMethod := TRequestMethodString[FMethod];
+        LURL := GetURL;
+        DoInjectHeaders;
+
+        if Assigned(FBody) then
+        begin
+          FClient.Execute(LMethod, LURL, TStringStream.Create(FBody.ToJSON));
+          if FOwnsObject then
+            FBody.DisposeOf;
+        end
+        else
+          FClient.Execute(LMethod, LURL);
+      end
+    ).OnAfterExecute(
+      procedure
+      begin
+        if Assigned(ACallBack) then
+        begin
+          TThread.Synchronize(nil, TThreadProcedure(ACallBack));
+        end;
+      end)
+    .Start;
 end;
 
 procedure THermes.DoExecuteAsync;
 begin
-  FClient.Asynchronous := True;
-  DoCallExecuteClient;
+  DoExecuteAsync(nil);
 end;
 
 procedure THermes.Execute;
@@ -175,7 +204,7 @@ end;
 
 procedure THermes.ExecuteAsync(ACallback: TProc);
 begin
-  DoExecuteAsync;
+  DoExecuteAsync(ACallback);
 end;
 
 function THermes.GetURL: string;
@@ -202,25 +231,27 @@ end;
 
 procedure THermes.ExecuteAsync(ACallback: THermesExecuteCallbackRef);
 begin
-  DoExecuteAsync;
-
+  DoExecuteAsync(
+    procedure
+    begin
+      ACallback(Self);
+    end);
 end;
 
 procedure THermes.ExecuteAsync;
 begin
   DoExecuteAsync;
-
 end;
 
 procedure THermes.OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
 begin
-  FResponse := AResponse;
-  AResponse.
+  THermesResponseHack(FResponse).SetReponse(AResponse);
   AfterExecute(Self);
 end;
 
 procedure THermes.OnInternalRequestError(const Sender: TObject; const AError: string);
 begin
+  THermesResponseHack(FResponse).SetError(AError);
   AfterExecute(Self);
 end;
 

@@ -83,31 +83,31 @@ end;
 
 procedure THermesParams.SetHeaders(AKey: String; const Value: TValue);
 begin
-  FHeaders.Add(AKey, Value);
+  FHeaders.AddOrSetValue(AKey, Value);
 end;
 
 function THermesParams.SetParam(AKey: string; AValue: TValue): THermesParams;
 begin
-  FParams.Add(AKey, AValue);
+  FParams.AddOrSetValue(AKey, AValue);
 
   Result := Self;
 end;
 
 procedure THermesParams.SetParams(AKey: String; const Value: TValue);
 begin
-  FParams.Add(AKey, Value);
+  FParams.AddOrSetValue(AKey, Value);
 end;
 
 function THermesParams.SetQuery(AKey: string; AValue: TValue): THermesParams;
 begin
-  FQuery.Add(AKey, AValue);
+  FQuery.AddOrSetValue(AKey, AValue);
 
   Result := Self;
 end;
 
 procedure THermesParams.SetQueries(AKey: String; const Value: TValue);
 begin
-  FQuery.Add(AKey, Value);
+  FQuery.AddOrSetValue(AKey, Value);
 end;
 
 { THermesParamsExposed }

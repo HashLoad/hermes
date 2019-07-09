@@ -19,6 +19,7 @@ type
     Memo1: TMemo;
     WebBrowser1: TWebBrowser;
     procedure Button1Click(Sender: TObject);
+    procedure Hermes1RequestCompleted(const AHermes: THermes);
   private
     { Private declarations }
   public
@@ -36,18 +37,15 @@ procedure TForm3.Button1Click(Sender: TObject);
 begin
   Hermes1
     .SetQuery('q', 'Rodrigo Bernardi')
-    .Execute;
+    .ExecuteAsync;
 
-  Memo1.Lines.Add('Status: ' + Hermes1.Response.StatusCode.ToString + ' - ' + Hermes1.Response.StatusText);
-  Memo1.Lines.Add('Date: ' + Hermes1.Response.Date);
-  Memo1.Lines.Add('Encoding: ' + Hermes1.Response.ContentEncoding);
-  Memo1.Lines.Add('Lang: ' + Hermes1.Response.ContentLanguage);
-  Memo1.Lines.Add('Length: ' + Hermes1.Response.ContentLength.ToString);
-  Memo1.Lines.Add('Mime: ' + Hermes1.Response.MimeType);
-  Memo1.Lines.Add('CharSet: ' + Hermes1.Response.ContentCharSet);
-  Memo1.Lines.Add('Content: ' + Hermes1.Response.ContentAsString());
+end;
 
-  WebBrowser1.LoadFromStrings(Hermes1.Response.ContentAsString, Hermes1.BasePath);
+procedure TForm3.Hermes1RequestCompleted(const AHermes: THermes);
+begin
+  Memo1.Lines.Add(Hermes1.Response.ToString);
+
+  WebBrowser1.LoadFromStrings(Hermes1.Response.Body, Hermes1.BasePath);
 end;
 
 end.

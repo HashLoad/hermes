@@ -36,6 +36,7 @@ object Form3: TForm3
   object Hermes1: THermes
     BasePath = 'https://google.com'
     Resource = '/search'
+    OnRequestCompleted = Hermes1RequestCompleted
     Left = 304
     Top = 224
   end

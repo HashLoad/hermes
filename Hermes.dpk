@@ -46,6 +46,7 @@ contains
   REST.Hermes.Core in 'src\REST.Hermes.Core.pas',
   REST.Hermes.Params in 'src\REST.Hermes.Params.pas',
   REST.Hermes.URL in 'src\REST.Hermes.URL.pas',
-  REST.Hermes.Response in 'src\REST.Hermes.Response.pas';
+  REST.Hermes.Response in 'src\REST.Hermes.Response.pas',
+  REST.Hermes.Parser in 'src\REST.Hermes.Parser.pas';
 
 end.
