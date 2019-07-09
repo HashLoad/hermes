@@ -117,13 +117,13 @@ const
  STATUS_ERROR = 0;
  STATUS_ERROR_TEXT = 'Erro on request';
  MIME_TYPE = 'plain/text';
- CHAR_SET = 'win1252';
+ CHAR_SET = 'utf-8';
  
  
 begin
   FStatusCode := STATUS_ERROR;
   FBody.Clear;
-  FBody.Write(STATUS_ERROR_TEXT, STATUS_ERROR_TEXT.Length);
+  FBody.Write(AError, AError.Length);
   FContentType := MIME_TYPE;
   FStatusText := STATUS_ERROR_TEXT; 
   FContentCharSet := CHAR_SET;
