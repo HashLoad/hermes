@@ -9,7 +9,6 @@ type
   THermesManager = class(TComponent)
   public
     class var FGlobalInterceptors: TList<IHermesInterceptor>;
-    class var GlobalHermes: TList<THermes>;
 
     class var FBasePath: string;
   private
@@ -60,14 +59,13 @@ end;
 
 procedure THermesBasePathInjector.BeforeExecute(const AHermes: THermes);
 begin
-  if AHermes.Client.BaseURL.IsEmpty and not THermesManager.FBasePath.IsEmpty then
-    AHermes.Client.BaseURL := THermesManager.FBasePath;
+  if AHermes.BasePath.IsEmpty and not THermesManager.FBasePath.IsEmpty then
+    AHermes.BasePath := THermesManager.FBasePath;
 end;
 
 initialization
 
 THermesManager.FGlobalInterceptors := TList<IHermesInterceptor>.Create;
-THermesManager.GlobalHermes := TList<THermes>.Create;
 
 THermesManager.AddGlobalInterceptor(THermesBasePathInjector.Create);
 
@@ -75,10 +73,6 @@ finalization
 
 THermesManager
   .FGlobalInterceptors
-  .DisposeOf;
-
-THermesManager
-  .GlobalHermes
   .DisposeOf;
 
 end.

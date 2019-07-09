@@ -3,12 +3,15 @@ unit REST.Hermes;
 interface
 
 uses
-  System.Classes, REST.Client, REST.Types, FireDAC.Comp.Client, REST.Response.Adapter, Data.Bind.ObjectScope,
-  System.SysUtils, System.Generics.Collections, System.Json;
+  System.Classes, REST.Client, REST.Types, REST.Response.Adapter, Data.Bind.ObjectScope,
+  System.SysUtils, System.Generics.Collections, System.Json, System.Net.HttpClientComponent,
+  System.Net.URLClient, FireDAC.Comp.Client, System.Net.HttpClient, REST.Hermes.Params, REST.Hermes.Core, System.Rtti,
+  REST.Hermes.Response;
 
 type
   THermes = class;
-  TRESTObjectOwnership = REST.Types.TRESTObjectOwnership;
+
+  TRequestMethod = REST.Hermes.Core.TRequestMethod;
 
   THermesExecuteCallback = procedure(const AHermes: THermes) of Object;
   THermesExecuteCallbackRef = TProc<THermes>;
@@ -19,55 +22,55 @@ type
   end;
 
   THermes = class(TComponent)
-  private                                        
-    FDataSet: TFDMemTable;
+  private
     FBasePath: string;
-    FRESTClient: TRESTClient;
-    FRESTRequest: TRESTRequest;
-    FRESTResponse: TRESTResponse;
-    FDataSetAdapter: TRESTResponseDataSetAdapter;
+    FResource: string;
+
+    FClient: TNetHTTPClient;
+    FResponse: THermesResponse;
+
+    FOwnsObject: Boolean;
+    FBody: TJSONObject;
+
+    FMethod: TRequestMethod;
+    FParams: THermesParams;
+
+
     FOnRequestCompleted: THermesExecuteCallback;
 
-    procedure DoJoinComponents;
-    function GetMethod: TRESTRequestMethod;
-    function GetDataSet: TFDMemTable;
-    function GetBasePath: String;
-    function GetResource: string;
-    function GetAuthProvider: TCustomAuthenticator;
-    function BasePathIsStored: Boolean;
+    procedure AfterExecute(const AHermes: THermes);
+    procedure BeforeExecute(const AHermes: THermes);
 
-    procedure SetMethod(const Value: TRESTRequestMethod);
-    procedure SetDataSet(const Value: TFDMemTable);
-    procedure SetResource(const Value: string);
-    procedure SetBasePath(const Value: String);
-    procedure SetAuthProvider(const Value: TCustomAuthenticator);
+    function GetURL: string;
+    procedure DoInjectHeaders;
 
-    
-    procedure RESTRequestAfterExecute(Sender: TCustomRESTRequest);
+    procedure DoExecute;
+    procedure DoExecuteAsync; overload;
+    procedure DoExecuteAsync(ACallback: TProc); overload;
 
-     procedure AfterExecute(const AHermes: THermes);
-     procedure BeforeExecute(const AHermes: THermes);
-  protected
-   public
+    procedure OnInternalRequestError(const Sender: TObject; const AError: string);
+    procedure OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
+  public
     constructor Create(AOwner: TComponent); override;
-    function SetParam(AParam: string; AValue: string): THermes;
-    function SetHeader(AKey: string; AValue: string): THermes;
-    function SetBody(AJson: TJSONObject; const ARESTObjectOwnership: TRESTObjectOwnership=TRESTObjectOwnership.ooREST): THermes;
-    Procedure Execute;
-    Procedure ExecuteAsync; Overload;
-    Procedure ExecuteAsync(ACallback: THermesExecuteCallbackRef); Overload;
+
+    function SetQuery(AParam: string; AValue: TValue): THermes;
+    function SetParam(AParam: string; AValue: TValue): THermes;
+    function SetHeader(AKey: string; AValue: TValue): THermes;
+    function SetBody(AJson: TJSONObject; const AOwnsObject: Boolean = True): THermes;
+
+    procedure Execute; overload;
+    procedure ExecuteAsync; Overload;
+    procedure ExecuteAsync(ACallback: THermesExecuteCallbackRef); Overload;
+    procedure ExecuteAsync(ACallback: TProc); Overload;
     destructor Destroy; override;
   published
-    property Method: TRESTRequestMethod read GetMethod write SetMethod default rmGET;
-    property Dataset: TFDMemTable read GetDataSet write SetDataSet;
-    property BasePath: String read GetBasePath write SetBasePath stored BasePathIsStored;
-    property Resource: string read GetResource write SetResource;
-    
-    property Client: TRESTClient read FRESTClient write FRESTClient;
-    property Request: TRESTRequest read FRESTRequest write FRESTRequest;
-    property Response: TRESTResponse read FRESTResponse write FRESTResponse;
-    property DataSetAdapter: TRESTResponseDataSetAdapter read FDataSetAdapter write FDataSetAdapter;
-    property AuthProvider: TCustomAuthenticator read GetAuthProvider write SetAuthProvider;
+    property Method: TRequestMethod read FMethod write FMethod default TRequestMethod.rmGET;
+    property BasePath: String read FBasePath write FBasePath;
+    property Resource: string read FResource write FResource;
+    property Params: THermesParams read FParams;
+
+    property Response: THermesResponse read FResponse;
+
     property OnRequestCompleted: THermesExecuteCallback read FOnRequestCompleted write FOnRequestCompleted;
 
     class Procedure AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
@@ -77,7 +80,7 @@ type
 implementation
 
 uses
-  REST.Hermes.Manager;
+  REST.Hermes.Manager, REST.Hermes.URL, System.Threading;
 
 { THermes }
 
@@ -87,190 +90,198 @@ begin
 end;
 
 procedure THermes.AfterExecute(const AHermes: THermes);
+var
+  LInterceptor: IHermesInterceptor;
 begin
-  TThread.Synchronize(nil,
-    procedure
-    var
-      LInterceptor: IHermesInterceptor;
-    begin
-      for LInterceptor in THermesManager.FGlobalInterceptors do
-      begin
-        LInterceptor.AfterExecute(Self);
-      end
-    end);
-end;
+  for LInterceptor in THermesManager.FGlobalInterceptors do
+  begin
+    LInterceptor.AfterExecute(Self);
+  end;
 
-function THermes.BasePathIsStored: Boolean;
-begin
- Result := (FBasePath <> THermesManager.FBasePath) or FBasePath.IsEmpty;
+  if Assigned(OnRequestCompleted) then
+    OnRequestCompleted(Self);
 end;
 
 procedure THermes.BeforeExecute(const AHermes: THermes);
+var
+  LInterceptor: IHermesInterceptor;
 begin
-  TThread.Synchronize(nil,
-    procedure
-    var
-      LInterceptor: IHermesInterceptor;
-    begin
-      for LInterceptor in THermesManager.FGlobalInterceptors do
-      begin
-        LInterceptor.BeforeExecute(Self);
-      end
-    end);
+  for LInterceptor in THermesManager.FGlobalInterceptors do
+  begin
+    LInterceptor.BeforeExecute(Self);
+  end;
 end;
 
 constructor THermes.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  THermesManager
-    .GlobalHermes
-    .Add(Self);
+  FClient := TNetHTTPClient.Create(nil);
+  FClient.SetSubComponent(True);
+  FOwnsObject := True;
 
-  FRESTClient := TRESTClient.Create(Self);
-  FRESTClient.SetSubComponent(True);
+  FParams := THermesParams.Create;
 
-  FRESTRequest := TRESTRequest.Create(Self);
-  FRESTRequest.SetSubComponent(True);
+  FClient.OnRequestError := OnInternalRequestError;
+  FClient.OnRequestCompleted := OnInternalRequestCompleted;
 
-  FRESTResponse := TRESTResponse.Create(Self);
-  FRESTResponse.SetSubComponent(True);
-
-  FDataSetAdapter := TRESTResponseDataSetAdapter.Create(Self);
-  FDataSetAdapter.SetSubComponent(True);
-  FDataSetAdapter.Response := FRESTResponse;
-
-  FRESTRequest.OnAfterExecute := RESTRequestAfterExecute;
   FBasePath := THermesManager.FBasePath;
 
-  DoJoinComponents;
+  FResponse := THermesResponse.Create;
 end;
 
 destructor THermes.Destroy;
 begin
-  THermesManager
-    .GlobalHermes
-    .Remove(Self);
+  FClient.DisposeOf;
+  FParams.DisposeOf;
+  FResponse.DisposeOf;
   inherited;
 end;
 
-procedure THermes.DoJoinComponents;
+procedure THermes.DoExecute;
+var
+  LMethod: string;
+  LURL: string;
 begin
-  FRESTRequest.Client := FRESTClient;
-  FRESTRequest.Response := FRESTResponse;
+  BeforeExecute(Self);
+  LMethod := TRequestMethodString[FMethod];
+
+  LURL := GetURL;
+  DoInjectHeaders;
+
+  if Assigned(FBody) then
+  begin
+    FClient.Execute(LMethod, LURL, TStringStream.Create(FBody.ToJSON));
+    if FOwnsObject then
+      FBody.DisposeOf;
+  end
+  else
+    FClient.Execute(LMethod, LURL);
+end;
+
+procedure THermes.DoExecuteAsync(ACallback: TProc);
+var
+  LMethod: string;
+  LURL: string;
+begin
+  BeforeExecute(Self);
+  THermesAsyncThread.Create
+    .OnExecute(
+      procedure
+      begin
+        LMethod := TRequestMethodString[FMethod];
+        LURL := GetURL;
+        DoInjectHeaders;
+
+        if Assigned(FBody) then
+        begin
+          FClient.Execute(LMethod, LURL, TStringStream.Create(FBody.ToJSON));
+          if FOwnsObject then
+            FBody.DisposeOf;
+        end
+        else
+          FClient.Execute(LMethod, LURL);
+      end
+    ).OnAfterExecute(
+      procedure
+      begin
+        if Assigned(ACallBack) then
+        begin
+          TThread.Synchronize(nil, TThreadProcedure(ACallBack));
+        end;
+      end)
+    .Start;
+end;
+
+procedure THermes.DoExecuteAsync;
+begin
+  DoExecuteAsync(nil);
 end;
 
 procedure THermes.Execute;
 begin
-  BeforeExecute(Self);
-    
-  FRESTRequest.Execute;
-  if Assigned(OnRequestCompleted) then
-    OnRequestCompleted(Self);
+  DoExecute;
+end;
+
+procedure THermes.ExecuteAsync(ACallback: TProc);
+begin
+  DoExecuteAsync(ACallback);
+end;
+
+function THermes.GetURL: string;
+var
+  LURLParser: THermesURL;
+begin
+  LURLParser := THermesURL.Create;
+  try
+    Result := LURLParser.Parse(BasePath + PATH_SEPARATOR + Resource, Params);
+  finally
+    LURLParser.DisposeOf;
+  end;
+end;
+
+procedure THermes.DoInjectHeaders;
+var
+  LHeader: TPair<string, TValue>;
+begin
+  for LHeader in THermesParamsExposed(Params).GetHeaders do
+  begin
+    FClient.CustomHeaders[LHeader.Key] := LHeader.Value.ToString;
+  end;
 end;
 
 procedure THermes.ExecuteAsync(ACallback: THermesExecuteCallbackRef);
 begin
-  BeforeExecute(Self);
-  FRESTRequest.ExecuteAsync(
+  DoExecuteAsync(
     procedure
     begin
-      if Assigned(ACallback) then
-        ACallback(Self)
-      else
-        OnRequestCompleted(Self);
+      ACallback(Self);
     end);
 end;
 
 procedure THermes.ExecuteAsync;
 begin
-  BeforeExecute(Self);
-  FRESTRequest.ExecuteAsync(
-    procedure
-    begin
-      OnRequestCompleted(Self);
-    end);
+  DoExecuteAsync;
 end;
 
-function THermes.GetAuthProvider: TCustomAuthenticator;
+procedure THermes.OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
 begin
-  Result := FRESTClient.Authenticator;
+  THermesResponseHack(FResponse).SetReponse(AResponse);
+  AfterExecute(Self);
 end;
 
-function THermes.GetDataSet: TFDMemTable;
+procedure THermes.OnInternalRequestError(const Sender: TObject; const AError: string);
 begin
-  Result := FDataSet;
-end;
-
-function THermes.GetMethod: TRESTRequestMethod;
-begin
-  Result := FRESTRequest.Method;
-end;
-
-function THermes.GetResource: string;
-begin
-  Result := FRESTRequest.Resource;
+  THermesResponseHack(FResponse).SetError(AError);
+  AfterExecute(Self);
 end;
 
 class procedure THermes.RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
 begin
-   THermesManager.FGlobalInterceptors.Remove(AInterceptor);
+  THermesManager.FGlobalInterceptors.Remove(AInterceptor);
 end;
 
-procedure THermes.RESTRequestAfterExecute(Sender: TCustomRESTRequest);
+function THermes.SetHeader(AKey: string; AValue: TValue): THermes;
 begin
-  AfterExecute(Self);
+  Result := Self;
+  FParams.SetHeader(AKey, AValue);
 end;
 
-function THermes.GetBasePath: String;
+function THermes.SetParam(AParam: string; AValue: TValue): THermes;
 begin
-  if FBasePath.IsEmpty then
-    FBasePath := THermesManager.FBasePath;
-
-  Result := FBasePath;
+  Result := Self;
+  FParams.SetParam(AParam, AValue);
 end;
 
-procedure THermes.SetAuthProvider(const Value: TCustomAuthenticator);
+function THermes.SetQuery(AParam: string; AValue: TValue): THermes;
 begin
-  FRESTClient.Authenticator := Value;
+  FParams.SetQuery(AParam, AValue);
+  Result := Self;
 end;
 
-procedure THermes.SetDataSet(const Value: TFDMemTable);
+function THermes.SetBody(AJson: TJSONObject; const AOwnsObject: Boolean = True): THermes;
 begin
-  FDataSetAdapter.Dataset := Value;
-  FDataSet := Value;
-end;
-
-function THermes.SetHeader(AKey: string; AValue: string): THermes;
-begin
-Result:=Self;
-Request.Params.AddHeader(AKey, AValue);
-end;
-
-procedure THermes.SetMethod(const Value: TRESTRequestMethod);
-begin
-  FRESTRequest.Method := Value;
-end;
-
-function THermes.SetParam(AParam, AValue: string): THermes;
-begin
-Result:= Self;
-Request.Params.ParameterByName(AParam).Value := AValue;
-end;
-
-procedure THermes.SetResource(const Value: string);
-begin
-  FRESTRequest.Resource := Value;
-end;
-
-procedure THermes.SetBasePath(const Value: String);
-begin
-  FBasePath := Value;
-end;
-
-function THermes.SetBody(AJson: TJSONObject; const ARESTObjectOwnership: TRESTObjectOwnership=TRESTObjectOwnership.ooREST): THermes;
-begin
-  Result:= Self;
-  Request.Params.AddBody(AJson, ARESTObjectOwnership);
+  Result := Self;
+  FBody := AJson;
 end;
 
 end.

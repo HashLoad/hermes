@@ -7,7 +7,7 @@
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
-        <TargetedPlatforms>1</TargetedPlatforms>
+        <TargetedPlatforms>147</TargetedPlatforms>
         <AppType>Package</AppType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -62,11 +62,14 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <SanitizedProjectName>Hermes</SanitizedProjectName>
-    <DCC_UnitSearchPath>modules\.dcp;modules\.dcu;$(DCC_UnitSearchPath);modules</DCC_UnitSearchPath></PropertyGroup>
+        <DCC_UnitSearchPath>modules\.dcp;modules\.dcu;modules;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
         <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
         <EnabledSysJars>android-support-v4.dex.jar;cloud-messaging.dex.jar;fmx.dex.jar;google-analytics-v2.dex.jar;google-play-billing.dex.jar;google-play-licensing.dex.jar;google-play-services-ads-7.0.0.dex.jar;google-play-services-analytics-7.0.0.dex.jar;google-play-services-base-7.0.0.dex.jar;google-play-services-gcm-7.0.0.dex.jar;google-play-services-identity-7.0.0.dex.jar;google-play-services-maps-7.0.0.dex.jar;google-play-services-panorama-7.0.0.dex.jar;google-play-services-plus-7.0.0.dex.jar;google-play-services-wallet-7.0.0.dex.jar</EnabledSysJars>
         <DCC_UsePackage>rtl;bindengine;bindcomp;RESTComponents;FireDAC;FireDACCommonDriver;FireDACCommon;$(DCC_UsePackage)</DCC_UsePackage>
+        <VerInfo_Keys>package=com.embarcadero.$(MSBuildProjectName);label=$(MSBuildProjectName);versionCode=1;versionName=1.0.0;persistent=False;restoreAnyVersion=False;installLocation=auto;largeHeap=False;theme=TitleBar;hardwareAccelerated=true;apiKey=</VerInfo_Keys>
+        <BT_BuildType>Debug</BT_BuildType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Linux64)'!=''">
         <DCC_UsePackage>rtl;bindengine;bindcomp;RESTComponents;FireDAC;FireDACCommonDriver;FireDACCommon;$(DCC_UsePackage)</DCC_UsePackage>
@@ -81,6 +84,11 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <DCC_UsePackage>rtl;bindengine;bindcomp;RESTComponents;FireDAC;FireDACCommonDriver;FireDACCommon;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -106,19 +114,24 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="rtl.dcp"></DCCReference>
-        <DCCReference Include="bindengine.dcp"></DCCReference>
-        <DCCReference Include="bindcomp.dcp"></DCCReference>
-        <DCCReference Include="RESTComponents.dcp"></DCCReference>
-        <DCCReference Include="FireDAC.dcp"></DCCReference>
-        <DCCReference Include="FireDACCommonDriver.dcp"></DCCReference>
-        <DCCReference Include="FireDACCommon.dcp"></DCCReference>
-        <DCCReference Include="designide.dcp"></DCCReference>
-        <DCCReference Include="src\REST.Hermes.pas"></DCCReference>
-        <DCCReference Include="src\REST.Hermes.Editor.pas"></DCCReference>
-        <DCCReference Include="src\REST.Hermes.Register.pas"></DCCReference>
-        <DCCReference Include="src\REST.Hermes.Manager.pas"></DCCReference>
-        <DCCReference Include="src\REST.Hermes.Interceptor.pas"></DCCReference>
+        <DCCReference Include="rtl.dcp"/>
+        <DCCReference Include="bindengine.dcp"/>
+        <DCCReference Include="bindcomp.dcp"/>
+        <DCCReference Include="RESTComponents.dcp"/>
+        <DCCReference Include="FireDAC.dcp"/>
+        <DCCReference Include="FireDACCommonDriver.dcp"/>
+        <DCCReference Include="FireDACCommon.dcp"/>
+        <DCCReference Include="designide.dcp"/>
+        <DCCReference Include="src\REST.Hermes.pas"/>
+        <DCCReference Include="src\REST.Hermes.Editor.pas"/>
+        <DCCReference Include="src\REST.Hermes.Register.pas"/>
+        <DCCReference Include="src\REST.Hermes.Manager.pas"/>
+        <DCCReference Include="src\REST.Hermes.Interceptor.pas"/>
+        <DCCReference Include="src\REST.Hermes.Core.pas"/>
+        <DCCReference Include="src\REST.Hermes.Params.pas"/>
+        <DCCReference Include="src\REST.Hermes.URL.pas"/>
+        <DCCReference Include="src\REST.Hermes.Response.pas"/>
+        <DCCReference Include="src\REST.Hermes.Parser.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -476,9 +489,9 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules"></DeployClass>
-                <DeployClass Name="ProjectiOSEntitlements"></DeployClass>
-                <DeployClass Name="ProjectiOSInfoPList"></DeployClass>
+                <DeployClass Name="ProjectiOSDeviceResourceRules"/>
+                <DeployClass Name="ProjectiOSEntitlements"/>
+                <DeployClass Name="ProjectiOSInfoPList"/>
                 <DeployClass Name="ProjectiOSResource">
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
@@ -490,9 +503,9 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectOSXDebug"></DeployClass>
-                <DeployClass Name="ProjectOSXEntitlements"></DeployClass>
-                <DeployClass Name="ProjectOSXInfoPList"></DeployClass>
+                <DeployClass Name="ProjectOSXDebug"/>
+                <DeployClass Name="ProjectOSXEntitlements"/>
+                <DeployClass Name="ProjectOSXInfoPList"/>
                 <DeployClass Name="ProjectOSXResource">
                     <Platform Name="OSX32">
                         <RemoteDir>Contents\Resources</RemoteDir>
@@ -558,26 +571,26 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"></ProjectRoot>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"></ProjectRoot>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"></ProjectRoot>
-                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"></ProjectRoot>
-                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"></ProjectRoot>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"></ProjectRoot>
-                <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"></ProjectRoot>
-                <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME)"></ProjectRoot>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"></ProjectRoot>
+                <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
             </Deployment>
             <Platforms>
-                <Platform value="Android">False</Platform>
-                <Platform value="Linux64">False</Platform>
+                <Platform value="Android">True</Platform>
+                <Platform value="Linux64">True</Platform>
                 <Platform value="Win32">True</Platform>
-                <Platform value="Win64">False</Platform>
+                <Platform value="Win64">True</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>
-    <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"></Import>
-    <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"></Import>
-    <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"></Import>
+    <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+    <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+    <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
 </Project>

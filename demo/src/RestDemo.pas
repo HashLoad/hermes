@@ -9,23 +9,17 @@ uses
   FireDAC.Comp.DataSet, FireDAC.Comp.Client, REST.Response.Adapter, REST.Client, Data.Bind.Components,
   Data.Bind.ObjectScope, REST.Hermes, System.Rtti, FMX.Grid.Style, Data.Bind.EngExt, FMX.Bind.DBEngExt,
   FMX.Bind.Grid, System.Bindings.Outputs, FMX.Bind.Editors, Data.Bind.Grid, Data.Bind.DBScope,
-  FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, REST.Authenticator.OAuth, REST.Hermes.Manager, FMX.StdCtrls;
+  FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, REST.Authenticator.OAuth, REST.Hermes.Manager, FMX.StdCtrls,
+  FMX.Memo, FMX.WebBrowser;
 
 type
   TForm3 = class(TForm)
-    Hermes1: THermes;
-    FDMemTable1: TFDMemTable;
-    Grid1: TGrid;
-    BindSourceDB1: TBindSourceDB;
-    BindingsList1: TBindingsList;
-    LinkGridToDataSourceBindSourceDB1: TLinkGridToDataSource;
-    HermesManager: THermesManager;
     Button1: TButton;
-    FDMemTable1userId: TWideStringField;
-    FDMemTable1id: TWideStringField;
-    FDMemTable1title: TWideStringField;
-    FDMemTable1body: TWideStringField;
+    Hermes1: THermes;
+    Memo1: TMemo;
+    WebBrowser1: TWebBrowser;
     procedure Button1Click(Sender: TObject);
+    procedure Hermes1RequestCompleted(const AHermes: THermes);
   private
     { Private declarations }
   public
@@ -41,7 +35,17 @@ implementation
 
 procedure TForm3.Button1Click(Sender: TObject);
 begin
-  Hermes1.Execute;
+  Hermes1
+    .SetQuery('q', 'Rodrigo Bernardi')
+    .ExecuteAsync;
+
+end;
+
+procedure TForm3.Hermes1RequestCompleted(const AHermes: THermes);
+begin
+  Memo1.Lines.Add(Hermes1.Response.ToString);
+
+  WebBrowser1.LoadFromStrings(Hermes1.Response.Body, Hermes1.BasePath);
 end;
 
 end.
