@@ -57,6 +57,9 @@ var
   LParams: TArray<string>;
   LParam: string;
 begin
+  if ABasePath.IsEmpty then
+    Exit(EmptyStr);
+
   LParams := GetParams(ABasePath);
 
   for LParam in LParams do
@@ -93,6 +96,9 @@ var
   LParams: TArray<string>;
   LParam: string;
 begin
+  if AResource.IsEmpty then
+    Exit(EmptyStr);
+
   LParams := GetParams(AResource);
 
   for LParam in LParams do
@@ -107,6 +113,9 @@ var
   LParams: TArray<string>;
   LParam: string;
 begin
+  if AShema.IsEmpty then
+    Exit(EmptyStr);
+
   LParams := GetParams(AShema);
 
   for LParam in LParams do
