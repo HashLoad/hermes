@@ -66,6 +66,10 @@ begin
   begin
     ABasePath := ABasePath.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
+
+  if ABasePath.EndsWith(PATH_SEPARATOR) then
+    ABasePath := ABasePath.Remove(High(ABasePath), 1);
+
   Result := ABasePath;
 end;
 
@@ -105,6 +109,9 @@ begin
   begin
     AResource := AResource.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
+  if not AResource.StartsWith(PATH_SEPARATOR) then
+    AResource := PATH_SEPARATOR + AResource;
+
   Result := AResource;
 end;
 
