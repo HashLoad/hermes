@@ -10,7 +10,7 @@ type
     BasePath: string;
     Resource: string;
     Scheme: string;
-    procedure DecodeUrl(AUrl: string);
+    procedure DecodeUrl(ABasePath: string; AResource: string);
   end;
 
   THermesURL = class
@@ -22,14 +22,14 @@ type
     function MakeBasePath(ABasePath: string; AParams: THermesParamsExposed): string;
     function MakeResource(AResource: string; AParams: THermesParamsExposed): string;
   public
-    function Parse(AUrl: string; AParams: THermesParams): string;
+    function Parse(ABasePath: string; AResource: string; AParams: THermesParams): string;
   end;
 
 implementation
 
 uses
   System.Generics.Collections, System.Sysutils, REST.Hermes.Core, System.Rtti, System.Net.URLClient,
-  System.RegularExpressions;
+  System.RegularExpressions, System.RegularExpressionsCore;
 
 { THermesURL }
 
@@ -116,7 +116,7 @@ begin
   Result := AShema + '://';
 end;
 
-function THermesURL.Parse(AUrl: string; AParams: THermesParams): string;
+function THermesURL.Parse(ABasePath: string; AResource: string; AParams: THermesParams): string;
 var
   LExposedParams: THermesParamsExposed;
   LUrlDecoded: THermesURLDecoded;
@@ -126,7 +126,7 @@ var
   LShema: string;
 begin
   LExposedParams := THermesParamsExposed(AParams);
-  LUrlDecoded.DecodeUrl(AUrl);
+  LUrlDecoded.DecodeUrl(ABasePath, AResource);
 
   LShema := MakeScheme(LUrlDecoded.Scheme, LExposedParams);
   LBasePath := MakeBasePath(LUrlDecoded.BasePath, LExposedParams);
@@ -139,15 +139,24 @@ end;
 
 { THermesURLDecoded }
 
-procedure THermesURLDecoded.DecodeUrl(AUrl: string);
+procedure THermesURLDecoded.DecodeUrl(ABasePath: string; AResource: string);
+const
+  EMPTY = 0;
+  ONLY_ONE = 1;
 var
-  LURI: TURI;
+  LBasePathParts: TArray<string>;
 begin
-  LURI := TURI.Create(AUrl);
+  LBasePathParts := ABasePath.Split(['://']);
 
-  Self.BasePath := LURI.Host;
-  Self.Resource := LURI.Path.Replace(PATH_SEPARATOR + PATH_SEPARATOR, PATH_SEPARATOR);
-  Self.Scheme := LURI.Scheme;
+  if (Length(LBasePathParts) in [EMPTY, ONLY_ONE]) then
+    Self.BasePath := ABasePath
+  else
+  begin
+    Self.Scheme := LBasePathParts[0];
+    Self.BasePath := LBasePathParts[1];
+  end;
+
+  Self.Resource := AResource;
 end;
 
 end.
