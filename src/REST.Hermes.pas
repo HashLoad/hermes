@@ -213,7 +213,7 @@ var
 begin
   LURLParser := THermesURL.Create;
   try
-    Result := LURLParser.Parse(BasePath + PATH_SEPARATOR + Resource, Params);
+    Result := LURLParser.Parse(BasePath, Resource, Params);
   finally
     LURLParser.DisposeOf;
   end;

@@ -34,10 +34,16 @@ object Form3: TForm3
     OnClick = Button1Click
   end
   object Hermes1: THermes
-    BasePath = 'https://google.com'
+    BasePath = 'https://:base'
     Resource = '/search'
     OnRequestCompleted = Hermes1RequestCompleted
-    Left = 304
+    Left = 192
     Top = 224
+  end
+  object HermesInterceptor: THermesInterceptor
+    Active = True
+    OnBeforeExecute = HermesInterceptorBeforeExecute
+    Left = 320
+    Top = 176
   end
 end

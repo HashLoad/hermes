@@ -10,7 +10,7 @@ uses
   Data.Bind.ObjectScope, REST.Hermes, System.Rtti, FMX.Grid.Style, Data.Bind.EngExt, FMX.Bind.DBEngExt,
   FMX.Bind.Grid, System.Bindings.Outputs, FMX.Bind.Editors, Data.Bind.Grid, Data.Bind.DBScope,
   FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, REST.Authenticator.OAuth, REST.Hermes.Manager, FMX.StdCtrls,
-  FMX.Memo, FMX.WebBrowser;
+  FMX.Memo, FMX.WebBrowser, REST.Hermes.Interceptor, REST.Hermes.Response;
 
 type
   TForm3 = class(TForm)
@@ -18,8 +18,10 @@ type
     Hermes1: THermes;
     Memo1: TMemo;
     WebBrowser1: TWebBrowser;
+    HermesInterceptor: THermesInterceptor;
     procedure Button1Click(Sender: TObject);
     procedure Hermes1RequestCompleted(const AHermes: THermes);
+    procedure HermesInterceptorBeforeExecute(const AHermes: THermes);
   private
     { Private declarations }
   public
@@ -46,6 +48,11 @@ begin
   Memo1.Lines.Add(Hermes1.Response.ToString);
 
   WebBrowser1.LoadFromStrings(Hermes1.Response.Body, Hermes1.BasePath);
+end;
+
+procedure TForm3.HermesInterceptorBeforeExecute(const AHermes: THermes);
+begin
+  AHermes.SetParam('base', 'www.google.com');
 end;
 
 end.
