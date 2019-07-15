@@ -76,7 +76,7 @@ end;
 
 function THermesParams.SetHeader(AKey: string; AValue: TValue): THermesParams;
 begin
-  FHeaders.Add(AKey, AValue);
+  FHeaders.AddOrSetValue(AKey, AValue);
 
   Result := Self;
 end;
