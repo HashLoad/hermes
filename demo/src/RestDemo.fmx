@@ -33,10 +33,10 @@ object Form3: TForm3
     Text = 'Button1'
     OnClick = Button1Click
   end
-  object Hermes1: THermes
+  object Hermes: THermes
     BasePath = 'https://:base'
     Resource = '/search'
-    OnRequestCompleted = Hermes1RequestCompleted
+    OnRequestCompleted = HermesRequestCompleted
     Left = 192
     Top = 224
   end

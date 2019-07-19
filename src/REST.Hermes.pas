@@ -82,6 +82,10 @@ implementation
 uses
   REST.Hermes.Manager, REST.Hermes.URL, System.Threading;
 
+const
+  CONTENT_TYPE = 'Content-Type';
+  APPLICATION_JSON = 'application/json';
+
 { THermes }
 
 class procedure THermes.AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
@@ -146,6 +150,10 @@ begin
   LMethod := TRequestMethodString[FMethod];
 
   LURL := GetURL;
+
+  if Assigned(FBody) then
+    SetHeader(CONTENT_TYPE, APPLICATION_JSON);
+
   DoInjectHeaders;
 
   if Assigned(FBody) then
@@ -153,6 +161,8 @@ begin
     FClient.Execute(LMethod, LURL, TStringStream.Create(FBody.ToJSON));
     if FOwnsObject then
       FBody.DisposeOf;
+
+    FBody := nil;
   end
   else
     FClient.Execute(LMethod, LURL);
@@ -170,6 +180,10 @@ begin
       begin
         LMethod := TRequestMethodString[FMethod];
         LURL := GetURL;
+
+        if Assigned(FBody) then
+          SetHeader(CONTENT_TYPE, APPLICATION_JSON);
+
         DoInjectHeaders;
 
         if Assigned(FBody) then
@@ -177,6 +191,8 @@ begin
           FClient.Execute(LMethod, LURL, TStringStream.Create(FBody.ToJSON));
           if FOwnsObject then
             FBody.DisposeOf;
+
+          FBody := nil;
         end
         else
           FClient.Execute(LMethod, LURL);
