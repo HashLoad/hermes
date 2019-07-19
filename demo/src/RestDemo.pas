@@ -15,12 +15,12 @@ uses
 type
   TForm3 = class(TForm)
     Button1: TButton;
-    Hermes1: THermes;
+    Hermes: THermes;
     Memo1: TMemo;
     WebBrowser1: TWebBrowser;
     HermesInterceptor: THermesInterceptor;
     procedure Button1Click(Sender: TObject);
-    procedure Hermes1RequestCompleted(const AHermes: THermes);
+    procedure HermesRequestCompleted(const AHermes: THermes);
     procedure HermesInterceptorBeforeExecute(const AHermes: THermes);
   private
     { Private declarations }
@@ -33,21 +33,30 @@ var
 
 implementation
 
+uses
+  System.JSON;
+
 {$R *.fmx}
 
 procedure TForm3.Button1Click(Sender: TObject);
 begin
-  Hermes1
+  Memo1.Lines.Clear;
+  Hermes
     .SetQuery('q', 'Rodrigo Bernardi')
-    .ExecuteAsync;
-
+//    .SetBody(TJSONObject.ParseJSONValue('{"a": "b"}') as TJSONObject)
+    .ExecuteAsync(
+      procedure
+      begin
+        Memo1.Lines.Add('Anon');
+      end);
 end;
 
-procedure TForm3.Hermes1RequestCompleted(const AHermes: THermes);
+procedure TForm3.HermesRequestCompleted(const AHermes: THermes);
 begin
-  Memo1.Lines.Add(Hermes1.Response.ToString);
+  Sleep(1000);
+  Memo1.Lines.Add(Hermes.Response.ToString);
 
-  WebBrowser1.LoadFromStrings(Hermes1.Response.Body, Hermes1.BasePath);
+  WebBrowser1.LoadFromStrings(Hermes.Response.Body, Hermes.BasePath);
 end;
 
 procedure TForm3.HermesInterceptorBeforeExecute(const AHermes: THermes);
