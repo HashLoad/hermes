@@ -37,8 +37,9 @@ type
 
 
     FOnRequestCompleted: THermesExecuteCallback;
+    FOnRequestError: THermesExecuteCallback;
 
-    procedure AfterExecute(const AHermes: THermes);
+    procedure AfterExecute(const AHermes: THermes; AError: Boolean);
     procedure BeforeExecute(const AHermes: THermes);
 
     function GetURL: string;
@@ -72,6 +73,7 @@ type
     property Response: THermesResponse read FResponse;
 
     property OnRequestCompleted: THermesExecuteCallback read FOnRequestCompleted write FOnRequestCompleted;
+    property OnRequestError: THermesExecuteCallback read FOnRequestError write FOnRequestError;
 
     class Procedure AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
     class Procedure RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
@@ -93,7 +95,7 @@ begin
   THermesManager.FGlobalInterceptors.Add(AInterceptor);
 end;
 
-procedure THermes.AfterExecute(const AHermes: THermes);
+procedure THermes.AfterExecute(const AHermes: THermes; AError: Boolean);
 var
   LInterceptor: IHermesInterceptor;
 begin
@@ -102,8 +104,16 @@ begin
     LInterceptor.AfterExecute(Self);
   end;
 
-  if Assigned(OnRequestCompleted) then
-    OnRequestCompleted(Self);
+  if AError then
+  begin
+    if Assigned(OnRequestError) then
+      OnRequestError(Self);
+  end
+  else
+  begin
+    if Assigned(OnRequestCompleted) then
+      OnRequestCompleted(Self);
+  end;
 end;
 
 procedure THermes.BeforeExecute(const AHermes: THermes);
@@ -262,13 +272,13 @@ end;
 procedure THermes.OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
 begin
   THermesResponseHack(FResponse).SetReponse(AResponse);
-  AfterExecute(Self);
+  AfterExecute(Self, False);
 end;
 
 procedure THermes.OnInternalRequestError(const Sender: TObject; const AError: string);
 begin
   THermesResponseHack(FResponse).SetError(AError);
-  AfterExecute(Self);
+  AfterExecute(Self, True);
 end;
 
 class procedure THermes.RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
