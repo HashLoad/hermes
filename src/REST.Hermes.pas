@@ -35,7 +35,6 @@ type
     FMethod: TRequestMethod;
     FParams: THermesParams;
 
-
     FOnRequestCompleted: THermesExecuteCallback;
     FOnRequestError: THermesExecuteCallback;
 
@@ -88,7 +87,7 @@ const
   CONTENT_TYPE = 'Content-Type';
   APPLICATION_JSON = 'application/json';
 
-{ THermes }
+  { THermes }
 
 class procedure THermes.AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
 begin
@@ -186,35 +185,43 @@ begin
   BeforeExecute(Self);
   THermesAsyncThread.Create
     .OnExecute(
-      procedure
+    procedure
+    var
+      LStringStream: TStringStream;
+    begin
+      LMethod := TRequestMethodString[FMethod];
+      LURL := GetURL;
+
+      if Assigned(FBody) then
+        SetHeader(CONTENT_TYPE, APPLICATION_JSON);
+
+      DoInjectHeaders;
+
+      if Assigned(FBody) then
       begin
-        LMethod := TRequestMethodString[FMethod];
-        LURL := GetURL;
-
-        if Assigned(FBody) then
-          SetHeader(CONTENT_TYPE, APPLICATION_JSON);
-
-        DoInjectHeaders;
-
-        if Assigned(FBody) then
-        begin
-          FClient.Execute(LMethod, LURL, TStringStream.Create(FBody.ToJSON));
-          if FOwnsObject then
-            FBody.DisposeOf;
-
-          FBody := nil;
-        end
-        else
-          FClient.Execute(LMethod, LURL);
-      end
-    ).OnAfterExecute(
-      procedure
-      begin
-        if Assigned(ACallBack) then
-        begin
-          TThread.Synchronize(nil, TThreadProcedure(ACallBack));
+        LStringStream := TStringStream.Create(FBody.ToJSON);
+        try
+          FClient.Execute(LMethod, LURL, LStringStream);
+        finally
+          LStringStream.DisposeOf;
+          LStringStream := nil;
         end;
-      end)
+        if FOwnsObject then
+          FBody.DisposeOf;
+
+        FBody := nil;
+      end
+      else
+        FClient.Execute(LMethod, LURL);
+    end
+    ).OnAfterExecute(
+    procedure
+    begin
+      if Assigned(ACallback) then
+      begin
+        TThread.Synchronize(nil, TThreadProcedure(ACallback));
+      end;
+    end)
     .Start;
 end;
 
