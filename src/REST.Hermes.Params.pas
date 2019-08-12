@@ -22,6 +22,8 @@ type
     constructor Create;
 
     function SetHeader(AKey: string; AValue: TValue): THermesParams;
+    function Clear: THermesParams;
+    function ClearQueryParams: THermesParams;
     function SetParam(AKey: string; AValue: TValue): THermesParams;
     function SetQuery(AKey: string; AValue: TValue): THermesParams;
     destructor Destroy; override;
@@ -43,6 +45,18 @@ uses
   System.SysUtils, REST.Hermes.Core;
 
 { THermesParams }
+
+function THermesParams.Clear: THermesParams;
+begin
+  FParams.Clear;
+  Result := Self;
+end;
+
+function THermesParams.ClearQueryParams: THermesParams;
+begin
+  FQuery.Clear;
+  Result := Self;
+end;
 
 constructor THermesParams.Create;
 begin

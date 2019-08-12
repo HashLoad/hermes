@@ -53,6 +53,9 @@ type
   public
     constructor Create(AOwner: TComponent); override;
 
+    function ClearParams: THermes;
+    function ClearQueryParams: THermes;
+
     function SetQuery(AParam: string; AValue: TValue): THermes;
     function SetParam(AParam: string; AValue: TValue): THermes;
     function SetHeader(AKey: string; AValue: TValue): THermes;
@@ -123,6 +126,18 @@ begin
   begin
     LInterceptor.BeforeExecute(Self);
   end;
+end;
+
+function THermes.ClearParams: THermes;
+begin
+  FParams.Clear;
+  Result := Self;
+end;
+
+function THermes.ClearQueryParams: THermes;
+begin
+  FParams.ClearQueryParams;
+  Result := Self;
 end;
 
 constructor THermes.Create(AOwner: TComponent);
