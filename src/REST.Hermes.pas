@@ -52,6 +52,10 @@ type
     procedure OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
   public
     constructor Create(AOwner: TComponent); override;
+
+    function SetQuery(AParam: string; AValue: TValue): THermes;
+    function SetParam(AParam: string; AValue: TValue): THermes;
+    function SetHeader(AKey: string; AValue: TValue): THermes;
     function SetBody(AJson: TJSONObject; const AOwnsObject: Boolean = True): THermes;
 
     procedure Execute; overload;
@@ -292,6 +296,24 @@ function THermes.SetBody(AJson: TJSONObject; const AOwnsObject: Boolean = True):
 begin
   Result := Self;
   FBody := AJson;
+end;
+
+function THermes.SetHeader(AKey: string; AValue: TValue): THermes;
+begin
+  FHermesParams.Headers.Add(AKey, AValue);
+  Result := Self;
+end;
+
+function THermes.SetParam(AParam: string; AValue: TValue): THermes;
+begin
+  FHermesParams.Params.Add(AParam, AValue);
+  Result := Self;
+end;
+
+function THermes.SetQuery(AParam: string; AValue: TValue): THermes;
+begin
+  FHermesParams.Query.Add(AParam, AValue);
+  Result := Self;
 end;
 
 end.
