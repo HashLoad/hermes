@@ -33,7 +33,7 @@ type
     FBody: TJSONObject;
 
     FMethod: TRequestMethod;
-    FParams: THermesParams;
+    FHermesParams: THermesParams;
 
     FOnRequestCompleted: THermesExecuteCallback;
     FOnRequestError: THermesExecuteCallback;
@@ -52,13 +52,6 @@ type
     procedure OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
   public
     constructor Create(AOwner: TComponent); override;
-
-    function ClearParams: THermes;
-    function ClearQueryParams: THermes;
-
-    function SetQuery(AParam: string; AValue: TValue): THermes;
-    function SetParam(AParam: string; AValue: TValue): THermes;
-    function SetHeader(AKey: string; AValue: TValue): THermes;
     function SetBody(AJson: TJSONObject; const AOwnsObject: Boolean = True): THermes;
 
     procedure Execute; overload;
@@ -70,7 +63,7 @@ type
     property Method: TRequestMethod read FMethod write FMethod default TRequestMethod.rmGET;
     property BasePath: String read FBasePath write FBasePath;
     property Resource: string read FResource write FResource;
-    property Params: THermesParams read FParams;
+    property HermesParams: THermesParams read FHermesParams;
 
     property Response: THermesResponse read FResponse;
 
@@ -128,18 +121,6 @@ begin
   end;
 end;
 
-function THermes.ClearParams: THermes;
-begin
-  FParams.Clear;
-  Result := Self;
-end;
-
-function THermes.ClearQueryParams: THermes;
-begin
-  FParams.ClearQueryParams;
-  Result := Self;
-end;
-
 constructor THermes.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -147,7 +128,7 @@ begin
   FClient.SetSubComponent(True);
   FOwnsObject := True;
 
-  FParams := THermesParams.Create;
+  FHermesParams := THermesParams.Create;
 
   FClient.OnRequestError := OnInternalRequestError;
   FClient.OnRequestCompleted := OnInternalRequestCompleted;
@@ -160,7 +141,7 @@ end;
 destructor THermes.Destroy;
 begin
   FClient.DisposeOf;
-  FParams.DisposeOf;
+  FHermesParams.DisposeOf;
   FResponse.DisposeOf;
   inherited;
 end;
@@ -176,7 +157,7 @@ begin
   LURL := GetURL;
 
   if Assigned(FBody) then
-    SetHeader(CONTENT_TYPE, APPLICATION_JSON);
+    FHermesParams.Headers.AddOrSetValue(CONTENT_TYPE, APPLICATION_JSON);
 
   DoInjectHeaders;
 
@@ -208,7 +189,7 @@ begin
       LURL := GetURL;
 
       if Assigned(FBody) then
-        SetHeader(CONTENT_TYPE, APPLICATION_JSON);
+        FHermesParams.Headers.AddOrSetValue(CONTENT_TYPE, APPLICATION_JSON);
 
       DoInjectHeaders;
 
@@ -219,7 +200,6 @@ begin
           FClient.Execute(LMethod, LURL, LStringStream);
         finally
           LStringStream.DisposeOf;
-          LStringStream := nil;
         end;
         if FOwnsObject then
           FBody.DisposeOf;
@@ -261,7 +241,7 @@ var
 begin
   LURLParser := THermesURL.Create;
   try
-    Result := LURLParser.Parse(BasePath, Resource, Params);
+    Result := LURLParser.Parse(BasePath, Resource, HermesParams);
   finally
     LURLParser.DisposeOf;
   end;
@@ -271,7 +251,7 @@ procedure THermes.DoInjectHeaders;
 var
   LHeader: TPair<string, TValue>;
 begin
-  for LHeader in THermesParamsExposed(Params).GetHeaders do
+  for LHeader in THermesParamsExposed(HermesParams).GetHeaders do
   begin
     FClient.CustomHeaders[LHeader.Key] := LHeader.Value.ToString;
   end;
@@ -306,24 +286,6 @@ end;
 class procedure THermes.RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
 begin
   THermesManager.FGlobalInterceptors.Remove(AInterceptor);
-end;
-
-function THermes.SetHeader(AKey: string; AValue: TValue): THermes;
-begin
-  Result := Self;
-  FParams.SetHeader(AKey, AValue);
-end;
-
-function THermes.SetParam(AParam: string; AValue: TValue): THermes;
-begin
-  Result := Self;
-  FParams.SetParam(AParam, AValue);
-end;
-
-function THermes.SetQuery(AParam: string; AValue: TValue): THermes;
-begin
-  FParams.SetQuery(AParam, AValue);
-  Result := Self;
 end;
 
 function THermes.SetBody(AJson: TJSONObject; const AOwnsObject: Boolean = True): THermes;
