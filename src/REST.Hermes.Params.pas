@@ -6,35 +6,30 @@ uses
   System.Generics.Collections, System.Rtti, System.Classes;
 
 type
+ THermesList = TDictionary<string, TValue>;
+
   THermesParams = class(TPersistent)
   private
-    FHeaders: TDictionary<string, TValue>;
-    FParams: TDictionary<string, TValue>;
-    FQuery: TDictionary<string, TValue>;
+    FHeaders: THermesList;
+    FQuery: THermesList;
+    FParams: THermesList;
 
     function GetHeaders(AKey: String): TValue;
     function GetParams(AKey: String): TValue;
     function GetQueries(AKey: String): TValue;
-    procedure SetHeaders(AKey: String; const Value: TValue);
-    procedure SetParams(AKey: String; const Value: TValue);
-    procedure SetQueries(AKey: String; const Value: TValue);
   public
     constructor Create;
-
-    function SetHeader(AKey: string; AValue: TValue): THermesParams;
-    function SetParam(AKey: string; AValue: TValue): THermesParams;
-    function SetQuery(AKey: string; AValue: TValue): THermesParams;
     destructor Destroy; override;
 
-    property Params[AKey: String]: TValue read GetParams write SetParams;
-    property Queries[AKey: String]: TValue read GetQueries write SetQueries;
-    property Headers[AKey: String]: TValue read GetHeaders write SetHeaders;
+    property Params: THermesList read FParams write FParams;
+    property Query: THermesList read FQuery write FQuery;
+    property Headers: THermesList read FHeaders write FHeaders;
   end;
 
   THermesParamsExposed = class(THermesParams)
-    function GetHeaders: TDictionary<string, TValue>;
-    function GetParams: TDictionary<string, TValue>;
-    function GetQueries: TDictionary<string, TValue>;
+    function GetHeaders: THermesList;
+    function GetParams: THermesList;
+    function GetQueries: THermesList;
   end;
 
 implementation
@@ -72,42 +67,6 @@ end;
 function THermesParams.GetQueries(AKey: String): TValue;
 begin
   Result := FQuery.Items[AKey];
-end;
-
-function THermesParams.SetHeader(AKey: string; AValue: TValue): THermesParams;
-begin
-  FHeaders.AddOrSetValue(AKey, AValue);
-
-  Result := Self;
-end;
-
-procedure THermesParams.SetHeaders(AKey: String; const Value: TValue);
-begin
-  FHeaders.AddOrSetValue(AKey, Value);
-end;
-
-function THermesParams.SetParam(AKey: string; AValue: TValue): THermesParams;
-begin
-  FParams.AddOrSetValue(AKey, AValue);
-
-  Result := Self;
-end;
-
-procedure THermesParams.SetParams(AKey: String; const Value: TValue);
-begin
-  FParams.AddOrSetValue(AKey, Value);
-end;
-
-function THermesParams.SetQuery(AKey: string; AValue: TValue): THermesParams;
-begin
-  FQuery.AddOrSetValue(AKey, AValue);
-
-  Result := Self;
-end;
-
-procedure THermesParams.SetQueries(AKey: String; const Value: TValue);
-begin
-  FQuery.AddOrSetValue(AKey, Value);
 end;
 
 { THermesParamsExposed }
