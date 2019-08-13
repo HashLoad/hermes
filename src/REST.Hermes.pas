@@ -300,19 +300,19 @@ end;
 
 function THermes.SetHeader(AKey: string; AValue: TValue): THermes;
 begin
-  FHermesParams.Headers.Add(AKey, AValue);
+  FHermesParams.Headers.AddOrSetValue(AKey, AValue);
   Result := Self;
 end;
 
 function THermes.SetParam(AParam: string; AValue: TValue): THermes;
 begin
-  FHermesParams.Params.Add(AParam, AValue);
+  FHermesParams.Params.AddOrSetValue(AParam, AValue);
   Result := Self;
 end;
 
 function THermes.SetQuery(AParam: string; AValue: TValue): THermes;
 begin
-  FHermesParams.Query.Add(AParam, AValue);
+  FHermesParams.Query.AddOrSetValue(AParam, AValue);
   Result := Self;
 end;
 
