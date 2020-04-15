@@ -154,27 +154,35 @@ procedure THermes.DoExecute;
 var
   LMethod: string;
   LURL: string;
+  LStringStream: TStringStream;
 begin
-  BeforeExecute(Self);
-  LMethod := TRequestMethodString[FMethod];
+  LStringStream := TStringStream.Create;
+  try
+    BeforeExecute(Self);
+    LMethod := TRequestMethodString[FMethod];
 
-  LURL := GetURL;
+    LURL := GetURL;
 
-  if Assigned(FBody) then
-    FHermesParams.Headers.AddOrSetValue(CONTENT_TYPE, APPLICATION_JSON);
+    if Assigned(FBody) then
+      FHermesParams.Headers.AddOrSetValue(CONTENT_TYPE, APPLICATION_JSON);
 
-  DoInjectHeaders;
+    DoInjectHeaders;
 
-  if Assigned(FBody) then
-  begin
-    FClient.Execute(LMethod, LURL, TStringStream.Create(FBody.ToJSON));
-    if FOwnsObject then
-      FBody.DisposeOf;
+    if Assigned(FBody) then
+    begin
+      LStringStream.WriteString(FBody.ToJSON);
 
-    FBody := nil;
-  end
-  else
-    FClient.Execute(LMethod, LURL);
+      FClient.Execute(LMethod, LURL, LStringStream);
+      if FOwnsObject then
+        FBody.DisposeOf;
+
+      FBody := nil;
+    end
+    else
+      FClient.Execute(LMethod, LURL);
+  finally
+    LStringStream.Free;
+  end;
 end;
 
 procedure THermes.DoExecuteAsync(ACallback: TProc);
