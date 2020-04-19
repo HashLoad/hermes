@@ -1,5 +1,5 @@
 unit REST.Hermes;
-
+
 interface
 
 uses
@@ -156,33 +156,33 @@ var
   LURL: string;
   LStringStream: TStringStream;
 begin
-  LStringStream := TStringStream.Create;
-  try
-    BeforeExecute(Self);
-    LMethod := TRequestMethodString[FMethod];
 
-    LURL := GetURL;
+  BeforeExecute(Self);
+  LMethod := TRequestMethodString[FMethod];
 
-    if Assigned(FBody) then
-      FHermesParams.Headers.AddOrSetValue(CONTENT_TYPE, APPLICATION_JSON);
+  LURL := GetURL;
 
-    DoInjectHeaders;
+  if Assigned(FBody) then
+    FHermesParams.Headers.AddOrSetValue(CONTENT_TYPE, APPLICATION_JSON);
 
-    if Assigned(FBody) then
-    begin
-      LStringStream.WriteString(FBody.ToJSON);
+  DoInjectHeaders;
 
+  if Assigned(FBody) then
+  begin
+    LStringStream := TStringStream.Create(FBody.ToJSON);
+    try
       FClient.Execute(LMethod, LURL, LStringStream);
       if FOwnsObject then
         FBody.DisposeOf;
 
       FBody := nil;
-    end
-    else
-      FClient.Execute(LMethod, LURL);
-  finally
-    LStringStream.Free;
-  end;
+    finally
+      LStringStream.Free;
+    end;
+  end
+  else
+    FClient.Execute(LMethod, LURL);
+
 end;
 
 procedure THermes.DoExecuteAsync(ACallback: TProc);
@@ -191,8 +191,7 @@ var
   LURL: string;
 begin
   BeforeExecute(Self);
-  THermesAsyncThread.Create
-    .OnExecute(
+  THermesAsyncThread.Create.OnExecute(
     procedure
     var
       LStringStream: TStringStream;
@@ -220,16 +219,14 @@ begin
       end
       else
         FClient.Execute(LMethod, LURL);
-    end
-    ).OnAfterExecute(
+    end).OnAfterExecute(
     procedure
     begin
       if Assigned(ACallback) then
       begin
         TThread.Synchronize(nil, TThreadProcedure(ACallback));
       end;
-    end)
-    .Start;
+    end).Start;
 end;
 
 procedure THermes.DoExecuteAsync;
@@ -325,3 +322,4 @@ begin
 end;
 
 end.
+
