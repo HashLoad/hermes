@@ -50,32 +50,29 @@ type
 
     procedure OnInternalRequestError(const Sender: TObject; const AError: string);
     procedure OnInternalRequestCompleted(const Sender: TObject; const AResponse: IHTTPResponse);
+    procedure SetRawClient(const Value: TNetHTTPClient);
   public
     constructor Create(AOwner: TComponent); override;
-
     function SetQuery(AParam: string; AValue: TValue): THermes;
     function SetParam(AParam: string; AValue: TValue): THermes;
     function SetHeader(AKey: string; AValue: TValue): THermes;
     function SetBody(AJson: TJSONObject; const AOwnsObject: Boolean = True): THermes;
-
     procedure Execute; overload;
     procedure ExecuteAsync; Overload;
     procedure ExecuteAsync(ACallback: THermesExecuteCallbackRef); Overload;
     procedure ExecuteAsync(ACallback: TProc); Overload;
     destructor Destroy; override;
   published
+    property RawClient: TNetHTTPClient read FClient write SetRawClient;
     property Method: TRequestMethod read FMethod write FMethod default TRequestMethod.rmGET;
     property BasePath: String read FBasePath write FBasePath;
     property Resource: string read FResource write FResource;
     property HermesParams: THermesParams read FHermesParams;
-
     property Response: THermesResponse read FResponse;
-
     property OnRequestCompleted: THermesExecuteCallback read FOnRequestCompleted write FOnRequestCompleted;
     property OnRequestError: THermesExecuteCallback read FOnRequestError write FOnRequestError;
-
-    class Procedure AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
-    class Procedure RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
+    class procedure AddGlobalInterceptor(AInterceptor: IHermesInterceptor);
+    class procedure RemoveGlobalInterceptor(AInterceptor: IHermesInterceptor);
   end;
 
 implementation
@@ -319,6 +316,11 @@ function THermes.SetQuery(AParam: string; AValue: TValue): THermes;
 begin
   FHermesParams.Query.AddOrSetValue(AParam, AValue);
   Result := Self;
+end;
+
+procedure THermes.SetRawClient(const Value: TNetHTTPClient);
+begin
+  FClient := Value;
 end;
 
 end.

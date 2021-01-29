@@ -35,7 +35,7 @@ uses
 
 function THermesURL.GetParams(APath: string): TArray<string>;
 const
-  REGEXP_PARAM = ':\w+';
+  REGEXP_PARAM = '\'+PARAM_STRING_BEGIN+'\w+';
 var
   LRegex: TRegEx;
   LMatches: TMatchCollection;
@@ -48,7 +48,7 @@ begin
 
   for LIndex := 0 to LMatches.Count - 1 do
   begin
-    Result[LIndex] := LMatches.Item[LIndex].Value;
+    Result[LIndex] := LMatches.Item[LIndex].Value.Replace(PATH_SEPARATOR, '');
   end;
 end;
 
