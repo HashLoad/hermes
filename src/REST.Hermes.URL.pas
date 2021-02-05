@@ -15,8 +15,9 @@ type
 
   THermesURL = class
   private
-    function GetParams(APath: string): TArray<string>;
-
+    function GetParams(APath, ARegexPattern: string): TArray<string>; overload;
+    function GetParams(APath: string): TArray<string>; overload;
+    function GetBasePathParams(APath: string): TArray<string>;
     function MakeQueryParams(AParams: THermesParamsExposed): string;
     function MakeScheme(AShema: string; AParams: THermesParamsExposed): string;
     function MakeBasePath(ABasePath: string; AParams: THermesParamsExposed): string;
@@ -33,15 +34,27 @@ uses
 
 { THermesURL }
 
+function THermesURL.GetBasePathParams(APath: string): TArray<string>;
+const
+  REGEXP_PARAM = '\' + PARAM_STRING_COLON + '\w+';
+begin
+  Result := GetParams(APath, REGEXP_PARAM);
+end;
+
 function THermesURL.GetParams(APath: string): TArray<string>;
 const
-  REGEXP_PARAM = '\'+PARAM_STRING_BEGIN+'\w+';
+  REGEXP_PARAM = '\' + PARAM_STRING_BEGIN + '\w+';
+begin
+  Result := GetParams(APath, REGEXP_PARAM);
+end;
+
+function THermesURL.GetParams(APath, ARegexPattern: string): TArray<string>;
 var
   LRegex: TRegEx;
   LMatches: TMatchCollection;
   LIndex: Integer;
 begin
-  LRegex := TRegEx.Create(REGEXP_PARAM);
+  LRegex := TRegEx.Create(ARegexPattern);
   LMatches := LRegex.Matches(APath);
 
   SetLength(Result, LMatches.Count);
@@ -49,7 +62,7 @@ begin
   for LIndex := 0 to LMatches.Count - 1 do
   begin
     Result[LIndex] := LMatches.Item[LIndex].Value.Replace(PATH_SEPARATOR, '');
-  end;
+  end
 end;
 
 function THermesURL.MakeBasePath(ABasePath: string; AParams: THermesParamsExposed): string;
@@ -60,7 +73,7 @@ begin
   if ABasePath.IsEmpty then
     Exit(EmptyStr);
 
-  LParams := GetParams(ABasePath);
+  LParams := GetBasePathParams(ABasePath);
 
   for LParam in LParams do
   begin
