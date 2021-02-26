@@ -77,7 +77,7 @@ begin
 
   for LParam in LParams do
   begin
-    if AParams.Params.ContainsKey(LParam) then
+    if AParams.Params.ContainsKey(LParam.Replace(':', '')) then
       ABasePath := ABasePath.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
 
@@ -121,7 +121,7 @@ begin
 
   for LParam in LParams do
   begin
-    if AParams.Params.ContainsKey(LParam) then
+    if AParams.Params.ContainsKey(LParam.Replace(':', '')) then
       AResource := AResource.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
 
@@ -143,7 +143,7 @@ begin
 
   for LParam in LParams do
   begin
-    if AParams.Params.ContainsKey(LParam) then
+    if AParams.Params.ContainsKey(LParam.Replace(':', '')) then
       AShema := AShema.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
 
