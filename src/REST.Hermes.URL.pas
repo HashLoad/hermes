@@ -38,7 +38,7 @@ function THermesURL.GetBasePathParams(APath: string): TArray<string>;
 const
   REGEXP_PARAM = '\' + PARAM_STRING_COLON + '\w+';
 begin
-  Result := GetParams(APath, REGEXP_PARAM);
+  Result := GetParams(APath.Trim([PATH_SEPARATOR]), REGEXP_PARAM);
 end;
 
 function THermesURL.GetParams(APath: string): TArray<string>;
@@ -77,7 +77,8 @@ begin
 
   for LParam in LParams do
   begin
-    ABasePath := ABasePath.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
+    if AParams.Params.ContainsKey(LParam) then
+      ABasePath := ABasePath.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
 
   if ABasePath.EndsWith(PATH_SEPARATOR) then
@@ -120,8 +121,10 @@ begin
 
   for LParam in LParams do
   begin
-    AResource := AResource.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
+    if AParams.Params.ContainsKey(LParam) then
+      AResource := AResource.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
+
   if not AResource.StartsWith(PATH_SEPARATOR) then
     AResource := PATH_SEPARATOR + AResource;
 
@@ -140,8 +143,10 @@ begin
 
   for LParam in LParams do
   begin
-    AShema := AShema.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
+    if AParams.Params.ContainsKey(LParam) then
+      AShema := AShema.Replace(LParam, AParams.Params[LParam.Replace(':', '')].ToString);
   end;
+
   Result := AShema + '://';
 end;
 
